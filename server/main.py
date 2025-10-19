@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, status
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, status, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,6 +11,7 @@ from typing import List, Optional
 import shutil
 from pathlib import Path
 from contextlib import asynccontextmanager
+import logging
 
 from models import Room, RoomCreate, RoomJoin, ClipboardItem, TextClipboard
 from database import (
@@ -21,12 +22,26 @@ from database import (
     init_db
 )
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('cloudclipboard.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    logger.info("🚀 CloudClipboard server starting up...")
     await init_db()
+    logger.info("✅ Server startup complete")
     yield
-    # Shutdown (if needed)
+    # Shutdown
+    logger.info("🛑 CloudClipboard server shutting down...")
 
 app = FastAPI(title="Cloud Clipboard API", version="1.0.0", lifespan=lifespan)
 
@@ -46,10 +61,14 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 # ==================== AUTHENTICATION ====================
 
 @app.post("/api/room/create")
-async def create_room(room: RoomCreate):
+async def create_room(room: RoomCreate, request: Request):
     """Create a new room"""
+    client_ip = request.client.host
+    logger.info(f"🏠 Room creation attempt: {room.room_id} from {client_ip}")
+    
     existing = await rooms_collection.find_one({"room_id": room.room_id})
     if existing:
+        logger.warning(f"❌ Room creation failed - already exists: {room.room_id}")
         raise HTTPException(status_code=400, detail="Room ID already exists")
     
     # Hash password
@@ -63,19 +82,25 @@ async def create_room(room: RoomCreate):
     }
     
     await rooms_collection.insert_one(room_data)
+    logger.info(f"✅ Room created successfully: {room.room_id} by {client_ip}")
     return {"status": "success", "message": "Room created successfully", "room_id": room.room_id}
 
 @app.post("/api/room/join")
-async def join_room(join_data: RoomJoin):
+async def join_room(join_data: RoomJoin, request: Request):
     """Join an existing room"""
+    client_ip = request.client.host
+    logger.info(f"🚪 Join attempt: {join_data.username} -> {join_data.room_id} from {client_ip}")
+    
     room = await rooms_collection.find_one({"room_id": join_data.room_id})
     
     if not room:
+        logger.warning(f"❌ Join failed - room not found: {join_data.room_id}")
         raise HTTPException(status_code=404, detail="Room not found")
     
     # Verify password
     hashed_password = hashlib.sha256(join_data.password.encode()).hexdigest()
     if room["password"] != hashed_password:
+        logger.warning(f"❌ Join failed - invalid password: {join_data.username} -> {join_data.room_id}")
         raise HTTPException(status_code=401, detail="Invalid password")
     
     # Add user to room if not already a member
@@ -84,6 +109,9 @@ async def join_room(join_data: RoomJoin):
             {"room_id": join_data.room_id},
             {"$addToSet": {"members": join_data.username}}
         )
+        logger.info(f"👤 New member added: {join_data.username} to {join_data.room_id}")
+    else:
+        logger.info(f"🔄 Existing member rejoined: {join_data.username} to {join_data.room_id}")
     
     # Create or update user
     await users_collection.update_one(
@@ -96,6 +124,7 @@ async def join_room(join_data: RoomJoin):
         upsert=True
     )
     
+    logger.info(f"✅ User joined successfully: {join_data.username} -> {join_data.room_id}")
     return {
         "status": "success", 
         "message": "Joined room successfully",
@@ -115,11 +144,15 @@ async def get_room_members(room_id: str):
 # ==================== CLIPBOARD OPERATIONS ====================
 
 @app.post("/api/clipboard/text")
-async def save_text(item: TextClipboard):
+async def save_text(item: TextClipboard, request: Request):
     """Save text clipboard"""
+    client_ip = request.client.host
+    content_preview = item.content[:50] + "..." if len(item.content) > 50 else item.content
+    
     # Verify room exists
     room = await rooms_collection.find_one({"room_id": item.room_id})
     if not room:
+        logger.warning(f"❌ Text save failed - room not found: {item.room_id}")
         raise HTTPException(status_code=404, detail="Room not found")
     
     clipboard_data = {
@@ -135,6 +168,7 @@ async def save_text(item: TextClipboard):
     }
     
     await clipboard_collection.insert_one(clipboard_data)
+    logger.info(f"📝 Text saved: {item.username} in {item.room_id} - '{content_preview}' from {client_ip}")
     return {"status": "success", "id": clipboard_data["id"]}
 
 @app.post("/api/clipboard/image")

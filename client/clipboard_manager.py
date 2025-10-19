@@ -17,6 +17,7 @@ import json
 import sys
 
 from auth_window import AuthWindow
+from dashboard_window import DashboardWindow
 from config import CONFIG_FILE, API_URL, HOTKEY_HISTORY, HOTKEY_GHOST_MODE
 
 class ClipboardManagerApp:
@@ -32,6 +33,9 @@ class ClipboardManagerApp:
         self.username = None
         self.room_id = None
         self.password = None
+        
+        # Dashboard window
+        self.dashboard = None
         
         # Load config if exists
         if CONFIG_FILE.exists():
@@ -473,8 +477,21 @@ class ClipboardManagerApp:
         self.password = password
         self.save_config()
         
+        # Open dashboard window
+        self.open_dashboard()
+        
         # Start the system tray
         self.start_system_tray()
+    
+    def open_dashboard(self):
+        """Open the main dashboard window"""
+        if self.dashboard is None or not self.dashboard.window.winfo_exists():
+            self.dashboard = DashboardWindow(
+                parent=None,  # No parent window
+                username=self.username,
+                room_id=self.room_id,
+                password=self.password
+            )
     
     def start_system_tray(self):
         """Start system tray application"""
