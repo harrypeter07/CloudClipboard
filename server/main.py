@@ -10,6 +10,7 @@ import hashlib
 from typing import List, Optional
 import shutil
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 from models import Room, RoomCreate, RoomJoin, ClipboardItem, TextClipboard
 from database import (
@@ -20,7 +21,14 @@ from database import (
     init_db
 )
 
-app = FastAPI(title="Cloud Clipboard API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await init_db()
+    yield
+    # Shutdown (if needed)
+
+app = FastAPI(title="Cloud Clipboard API", version="1.0.0", lifespan=lifespan)
 
 # CORS
 app.add_middleware(
@@ -34,10 +42,6 @@ app.add_middleware(
 # Create uploads directory
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
-
-@app.on_event("startup")
-async def startup_event():
-    await init_db()
 
 # ==================== AUTHENTICATION ====================
 
