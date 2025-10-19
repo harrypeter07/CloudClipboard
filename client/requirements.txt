@@ -1,7 +1,7 @@
-pystray==0.19.5
-Pillow==10.1.0
-pyperclip==1.8.2
-keyboard==0.13.5
-requests==2.31.0
-pywin32==306
-pyinstaller==6.3.0
+pystray>=0.19.0
+Pillow>=9.0.0
+pyperclip>=1.8.0
+keyboard>=0.13.0
+requests>=2.28.0
+pywin32>=306
+pyinstaller>=5.0.0
