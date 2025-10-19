@@ -37,6 +37,10 @@ class ClipboardManagerApp:
         # Dashboard window
         self.dashboard = None
         
+        # Notification tracking
+        self.last_notification_time = 0
+        self.notification_cooldown = 2  # seconds
+        
         # Load config if exists
         if CONFIG_FILE.exists():
             self.load_config()
@@ -449,9 +453,12 @@ class ClipboardManagerApp:
             self.icon.icon = self.create_image(color)
     
     def show_notification(self, message):
-        """Show system notification"""
-        if self.icon and not self.ghost_mode:
-            self.icon.notify(message, "Cloud Clipboard")
+        """Show system notification with cooldown to prevent spam"""
+        current_time = time.time()
+        if (self.icon and not self.ghost_mode and 
+            current_time - self.last_notification_time > self.notification_cooldown):
+            self.icon.notify(message, "CloudClipboard")
+            self.last_notification_time = current_time
     
     def logout(self, icon=None, item=None):
         """Logout and clear config"""
@@ -493,6 +500,16 @@ class ClipboardManagerApp:
                 password=self.password
             )
     
+    def show_dashboard(self, icon=None, item=None):
+        """Show dashboard window from system tray"""
+        if self.dashboard is None or not self.dashboard.window.winfo_exists():
+            self.open_dashboard()
+        else:
+            # Bring existing window to front
+            self.dashboard.window.lift()
+            self.dashboard.window.attributes('-topmost', True)
+            self.dashboard.window.after(2000, lambda: self.dashboard.window.attributes('-topmost', False))
+    
     def start_system_tray(self):
         """Start system tray application"""
         # Register global hotkeys
@@ -504,23 +521,24 @@ class ClipboardManagerApp:
         
         # Create system tray menu
         menu = pystray.Menu(
-            item('Start Monitoring', self.start_monitoring, default=True),
-            item('Stop Monitoring', self.stop_monitoring),
+            item('📋 Show Dashboard', self.show_dashboard),
+            item('📜 Show History', self.show_history),
+            item('👻 Ghost Mode', self.toggle_ghost_mode, checked=lambda item: self.ghost_mode),
             pystray.Menu.SEPARATOR,
-            item(f'Show History ({HOTKEY_HISTORY})', self.show_history),
-            item(f'Ghost Mode ({HOTKEY_GHOST_MODE})', self.toggle_ghost_mode, checked=lambda item: self.ghost_mode),
+            item('🔄 Start Monitoring', self.start_monitoring),
+            item('⏹️ Stop Monitoring', self.stop_monitoring),
             pystray.Menu.SEPARATOR,
-            item(f'Room: {self.room_id}', None, enabled=False),
-            item(f'User: {self.username}', None, enabled=False),
+            item(f'🏠 Room: {self.room_id}', None, enabled=False),
+            item(f'👤 User: {self.username}', None, enabled=False),
             pystray.Menu.SEPARATOR,
-            item('Logout', self.logout),
-            item('Quit', self.quit_app)
+            item('🚪 Logout', self.logout),
+            item('❌ Quit', self.quit_app)
         )
         
         self.icon = pystray.Icon(
-            "cloudclipboard",
-            self.create_image("red"),
-            "Cloud Clipboard",
+            "CloudClipboard",
+            self.create_image("green"),
+            "CloudClipboard - Cloud Clipboard Sync",
             menu
         )
         

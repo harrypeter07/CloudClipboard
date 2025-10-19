@@ -137,6 +137,7 @@ class DashboardWindow:
         
         ttk.Button(button_frame, text="Refresh History", command=self.refresh_history).pack(side=tk.TOP, pady=2)
         ttk.Button(button_frame, text="Clear History", command=self.clear_history).pack(side=tk.TOP, pady=2)
+        ttk.Button(button_frame, text="Exit Room", command=self.exit_room, style="Accent.TButton").pack(side=tk.TOP, pady=2)
         ttk.Button(button_frame, text="Settings", command=self.open_settings).pack(side=tk.TOP, pady=2)
         ttk.Button(button_frame, text="Minimize to Tray", command=self.minimize_to_tray).pack(side=tk.TOP, pady=2)
     
@@ -312,6 +313,26 @@ class DashboardWindow:
     def open_settings(self):
         """Open settings window"""
         messagebox.showinfo("Settings", "Settings window will be implemented in future version")
+    
+    def exit_room(self):
+        """Exit the current room"""
+        if messagebox.askyesno("Exit Room", "Are you sure you want to exit this room?\n\nThis will stop clipboard synchronization."):
+            # Clear saved config
+            if CONFIG_FILE.exists():
+                CONFIG_FILE.unlink()
+            
+            self.update_status("Exited room successfully")
+            
+            # Close dashboard and return to auth window
+            self.window.destroy()
+            
+            # Import and show auth window
+            try:
+                from auth_window import AuthWindow
+                auth_window = AuthWindow()
+                auth_window.show()
+            except Exception as e:
+                print(f"Error opening auth window: {e}")
     
     def minimize_to_tray(self):
         """Minimize window to system tray"""
