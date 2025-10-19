@@ -138,9 +138,24 @@ class AuthWindow:
         room_id = self.room_id_entry.get().strip()
         password = self.password_entry.get().strip()
         
-        if not all([username, room_id, password]):
-            self.status_label.config(text="❌ All fields are required")
+        # Validate input
+        if not username:
+            self.show_error("Username is required")
             return
+        if not room_id:
+            self.show_error("Room ID is required")
+            return
+        if not password:
+            self.show_error("Password is required")
+            return
+        if len(room_id) < 3:
+            self.show_error("Room ID must be at least 3 characters")
+            return
+        if len(password) < 4:
+            self.show_error("Password must be at least 4 characters")
+            return
+        
+        self.show_loading("Creating room...")
         
         try:
             # Create room
