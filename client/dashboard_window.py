@@ -31,10 +31,17 @@ class DashboardWindow:
         self.auto_sync = True
         
         # Create dashboard window
-        self.window = tk.Toplevel(parent)
+        if parent is None:
+            self.window = tk.Tk()
+        else:
+            self.window = tk.Toplevel(parent)
+        
         self.window.title("CloudClipboard Dashboard")
         self.window.geometry("800x600")
         self.window.resizable(True, True)
+        
+        # Configure window styling
+        self.window.configure(bg='#f0f0f0')
         
         # Make window stay on top initially
         self.window.attributes('-topmost', True)
@@ -45,6 +52,11 @@ class DashboardWindow:
         
         # Create UI
         self.create_widgets()
+        
+        # Force window to show
+        self.window.deiconify()
+        self.window.lift()
+        self.window.focus_force()
         
         # Start clipboard history refresh
         self.refresh_history()
@@ -63,8 +75,20 @@ class DashboardWindow:
     
     def create_widgets(self):
         """Create all UI widgets"""
+        # Configure ttk styles
+        style = ttk.Style()
+        style.theme_use('clam')
+        
+        # Configure colors
+        style.configure('Title.TLabel', font=('Arial', 16, 'bold'), foreground='#2c3e50')
+        style.configure('Header.TLabel', font=('Arial', 12, 'bold'), foreground='#34495e')
+        style.configure('Info.TLabel', font=('Arial', 10), foreground='#7f8c8d')
+        style.configure('Success.TLabel', font=('Arial', 10), foreground='#27ae60')
+        style.configure('Error.TLabel', font=('Arial', 10), foreground='#e74c3c')
+        style.configure('Accent.TButton', font=('Arial', 10, 'bold'))
+        
         # Main container
-        main_frame = ttk.Frame(self.window, padding="10")
+        main_frame = ttk.Frame(self.window, padding="20")
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         # Configure grid weights
@@ -87,20 +111,24 @@ class DashboardWindow:
     
     def create_header(self, parent):
         """Create header section"""
-        header_frame = ttk.LabelFrame(parent, text="Room Information", padding="10")
-        header_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 10))
+        header_frame = ttk.LabelFrame(parent, text="🏠 Room Information", padding="15")
+        header_frame.grid(row=0, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=(0, 15))
         header_frame.columnconfigure(1, weight=1)
         
-        # Room info
-        ttk.Label(header_frame, text="Room ID:", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
-        room_label = ttk.Label(header_frame, text=self.room_id, font=("Arial", 10, "bold"), foreground="blue")
-        room_label.grid(row=0, column=1, sticky=tk.W)
+        # Title
+        title_label = ttk.Label(header_frame, text="CloudClipboard Dashboard", style='Title.TLabel')
+        title_label.grid(row=0, column=0, columnspan=3, pady=(0, 10))
         
-        ttk.Label(header_frame, text="Username:", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky=tk.W, padx=(0, 5))
-        ttk.Label(header_frame, text=self.username, font=("Arial", 10)).grid(row=1, column=1, sticky=tk.W)
+        # Room info with better styling
+        ttk.Label(header_frame, text="Room ID:", style='Header.TLabel').grid(row=1, column=0, sticky=tk.W, padx=(0, 5))
+        room_label = ttk.Label(header_frame, text=self.room_id, style='Info.TLabel')
+        room_label.grid(row=1, column=1, sticky=tk.W)
+        
+        ttk.Label(header_frame, text="Username:", style='Header.TLabel').grid(row=2, column=0, sticky=tk.W, padx=(0, 5))
+        ttk.Label(header_frame, text=self.username, style='Info.TLabel').grid(row=2, column=1, sticky=tk.W)
         
         # Copy room ID button
-        copy_btn = ttk.Button(header_frame, text="Copy Room ID", command=self.copy_room_id)
+        copy_btn = ttk.Button(header_frame, text="📋 Copy Room ID", command=self.copy_room_id, style='Accent.TButton')
         copy_btn.grid(row=0, column=2, padx=(10, 0))
         
         # Share button

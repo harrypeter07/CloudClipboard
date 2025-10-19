@@ -23,10 +23,13 @@ class AuthWindow:
         self.create_ui()
         
     def create_ui(self):
+        # Configure window styling
+        self.window.configure(bg='#f0f0f0')
+        
         # Header
         header = tk.Label(
             self.window,
-            text="☁️ Cloud Clipboard",
+            text="☁️ CloudClipboard",
             font=("Arial", 20, "bold"),
             bg="#3498db",
             fg="white",
@@ -38,28 +41,51 @@ class AuthWindow:
         main_frame = ttk.Frame(self.window, padding=20)
         main_frame.pack(fill=tk.BOTH, expand=True)
         
+        # Error message label
+        self.error_label = tk.Label(
+            main_frame,
+            text="",
+            font=("Arial", 10),
+            fg="#e74c3c",
+            bg="#f0f0f0"
+        )
+        self.error_label.pack(anchor=tk.W, pady=(0, 10))
+        
         # Username
-        ttk.Label(main_frame, text="Username:", font=("Arial", 11)).pack(anchor=tk.W, pady=(10, 5))
+        ttk.Label(main_frame, text="Username:", font=("Arial", 11, "bold")).pack(anchor=tk.W, pady=(10, 5))
         self.username_entry = ttk.Entry(main_frame, font=("Arial", 11), width=30)
-        self.username_entry.pack(fill=tk.X, pady=(0, 15))
+        self.username_entry.pack(fill=tk.X, pady=(0, 5))
+        self.username_entry.bind('<KeyRelease>', self.clear_error)
         
         # Room ID
-        ttk.Label(main_frame, text="Room ID:", font=("Arial", 11)).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Label(main_frame, text="Room ID:", font=("Arial", 11, "bold")).pack(anchor=tk.W, pady=(10, 5))
         self.room_id_entry = ttk.Entry(main_frame, font=("Arial", 11), width=30)
-        self.room_id_entry.pack(fill=tk.X, pady=(0, 15))
+        self.room_id_entry.pack(fill=tk.X, pady=(0, 5))
+        self.room_id_entry.bind('<KeyRelease>', self.clear_error)
         
         # Password
-        ttk.Label(main_frame, text="Password:", font=("Arial", 11)).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Label(main_frame, text="Password:", font=("Arial", 11, "bold")).pack(anchor=tk.W, pady=(10, 5))
         self.password_entry = ttk.Entry(main_frame, show="*", font=("Arial", 11), width=30)
-        self.password_entry.pack(fill=tk.X, pady=(0, 20))
+        self.password_entry.pack(fill=tk.X, pady=(0, 5))
+        self.password_entry.bind('<KeyRelease>', self.clear_error)
+        
+        # Loading label
+        self.loading_label = tk.Label(
+            main_frame,
+            text="",
+            font=("Arial", 10),
+            fg="#3498db",
+            bg="#f0f0f0"
+        )
+        self.loading_label.pack(anchor=tk.W, pady=(5, 10))
         
         # Buttons frame
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill=tk.X, pady=10)
         
-        create_btn = tk.Button(
+        self.create_btn = tk.Button(
             btn_frame,
-            text="Create Room",
+            text="🏠 Create Room",
             command=self.create_room,
             bg="#27ae60",
             fg="white",
@@ -68,11 +94,11 @@ class AuthWindow:
             padx=20,
             pady=8
         )
-        create_btn.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
+        self.create_btn.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
         
-        join_btn = tk.Button(
+        self.join_btn = tk.Button(
             btn_frame,
-            text="Join Room",
+            text="🚪 Join Room",
             command=self.join_room,
             bg="#3498db",
             fg="white",
@@ -81,7 +107,27 @@ class AuthWindow:
             padx=20,
             pady=8
         )
-        join_btn.pack(side=tk.RIGHT, expand=True, fill=tk.X, padx=(5, 0))
+        self.join_btn.pack(side=tk.RIGHT, expand=True, fill=tk.X, padx=(5, 0))
+    
+    def clear_error(self, event=None):
+        """Clear error message when user types"""
+        self.error_label.config(text="")
+    
+    def show_error(self, message):
+        """Show error message"""
+        self.error_label.config(text=f"❌ {message}")
+    
+    def show_loading(self, message):
+        """Show loading message"""
+        self.loading_label.config(text=f"⏳ {message}")
+        self.create_btn.config(state='disabled')
+        self.join_btn.config(state='disabled')
+    
+    def hide_loading(self):
+        """Hide loading message"""
+        self.loading_label.config(text="")
+        self.create_btn.config(state='normal')
+        self.join_btn.config(state='normal')
         
         # Status label
         self.status_label = tk.Label(main_frame, text="", font=("Arial", 9), fg="#e74c3c")
