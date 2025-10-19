@@ -187,6 +187,10 @@ class ClipboardManagerApp:
     def start_monitoring(self, icon=None, item=None):
         """Start clipboard monitoring"""
         if not self.monitoring:
+            # Stop any existing monitoring first
+            if self.monitor_thread and self.monitor_thread.is_alive():
+                self.monitoring = False
+                time.sleep(0.2)
             self.monitoring = True
             self.monitor_thread = threading.Thread(target=self.monitor_clipboard, daemon=True)
             self.monitor_thread.start()
@@ -577,7 +581,7 @@ class ClipboardManagerApp:
         
         # Show auth window
         auth = AuthWindow(self.on_auth_success)
-        auth.run()
+        auth.show()
 
 if __name__ == "__main__":
     app = ClipboardManagerApp()
