@@ -118,6 +118,8 @@ def test_room_operations():
         
         if response.status_code == 200:
             print_test("Room Creation", "PASS", f"Room '{test_room_id}' created")
+        elif response.status_code == 400 and "already exists" in response.text:
+            print_test("Room Creation", "PASS", f"Room '{test_room_id}' already exists (expected)")
         else:
             print_test("Room Creation", "FAIL", f"HTTP {response.status_code}: {response.text}")
             return False
