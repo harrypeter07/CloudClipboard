@@ -166,6 +166,7 @@ class AuthWindow:
             )
             
             if response.status_code == 200:
+                self.show_loading("Joining room...")
                 # Join the created room
                 join_response = requests.post(
                     f"{API_URL}/api/room/join",
@@ -175,28 +176,43 @@ class AuthWindow:
                 
                 if join_response.status_code == 200:
                     self.save_config(username, room_id, password)
-                    messagebox.showinfo("Success", f"Room '{room_id}' created successfully!")
+                    self.hide_loading()
+                    messagebox.showinfo("Success", f"✅ Room '{room_id}' created successfully!")
                     self.window.destroy()
                     self.on_success(username, room_id, password)
                 else:
-                    self.status_label.config(text=f"❌ {join_response.json().get('detail', 'Join failed')}")
+                    self.hide_loading()
+                    error_msg = join_response.json().get('detail', 'Join failed')
+                    self.show_error(f"Failed to join room: {error_msg}")
             else:
+                self.hide_loading()
                 error_msg = response.json().get('detail', 'Creation failed')
-                self.status_label.config(text=f"❌ {error_msg}")
+                self.show_error(f"Failed to create room: {error_msg}")
                 
         except requests.exceptions.RequestException as e:
-            self.status_label.config(text=f"❌ Connection error: {str(e)}")
+            self.hide_loading()
+            self.show_error(f"Connection error: {str(e)}")
         except Exception as e:
-            self.status_label.config(text=f"❌ Error: {str(e)}")
+            self.hide_loading()
+            self.show_error(f"Unexpected error: {str(e)}")
     
     def join_room(self):
         username = self.username_entry.get().strip()
         room_id = self.room_id_entry.get().strip()
         password = self.password_entry.get().strip()
         
-        if not all([username, room_id, password]):
-            self.status_label.config(text="❌ All fields are required")
+        # Validate input
+        if not username:
+            self.show_error("Username is required")
             return
+        if not room_id:
+            self.show_error("Room ID is required")
+            return
+        if not password:
+            self.show_error("Password is required")
+            return
+        
+        self.show_loading("Joining room...")
         
         try:
             response = requests.post(
@@ -207,17 +223,21 @@ class AuthWindow:
             
             if response.status_code == 200:
                 self.save_config(username, room_id, password)
-                messagebox.showinfo("Success", f"Joined room '{room_id}' successfully!")
+                self.hide_loading()
+                messagebox.showinfo("Success", f"✅ Joined room '{room_id}' successfully!")
                 self.window.destroy()
                 self.on_success(username, room_id, password)
             else:
+                self.hide_loading()
                 error_msg = response.json().get('detail', 'Join failed')
-                self.status_label.config(text=f"❌ {error_msg}")
+                self.show_error(f"Failed to join room: {error_msg}")
                 
         except requests.exceptions.RequestException as e:
-            self.status_label.config(text=f"❌ Connection error: {str(e)}")
+            self.hide_loading()
+            self.show_error(f"Connection error: {str(e)}")
         except Exception as e:
-            self.status_label.config(text=f"❌ Error: {str(e)}")
+            self.hide_loading()
+            self.show_error(f"Unexpected error: {str(e)}")
     
     def save_config(self, username, room_id, password):
         config = {
