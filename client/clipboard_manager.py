@@ -18,7 +18,7 @@ import sys
 
 from auth_window import AuthWindow
 from dashboard_window import DashboardWindow
-from config import CONFIG_FILE, API_URL, HOTKEY_HISTORY, HOTKEY_GHOST_MODE
+from config import CONFIG_FILE, API_URL, HOTKEY_HISTORY, HOTKEY_GHOST_MODE, HOTKEY_GHOST_PASTE
 
 class ClipboardManagerApp:
     def __init__(self):
