@@ -59,6 +59,9 @@ app.add_middleware(
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+# File size limits
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+
 # ==================== AUTHENTICATION ====================
 
 @app.post("/api/room/create")
