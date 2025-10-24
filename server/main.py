@@ -37,12 +37,12 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("🚀 CloudClipboard server starting up...")
+    logger.info("CloudClipboard server starting up...")
     await init_db()
-    logger.info("✅ Server startup complete")
+    logger.info("Server startup complete")
     yield
     # Shutdown
-    logger.info("🛑 CloudClipboard server shutting down...")
+    logger.info("CloudClipboard server shutting down...")
 
 app = FastAPI(title="Cloud Clipboard API", version="1.0.0", lifespan=lifespan)
 

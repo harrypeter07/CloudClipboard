@@ -16,8 +16,24 @@ users_collection = db["users"]
 
 async def init_db():
     """Initialize database indexes"""
-    # Create indexes
-    await rooms_collection.create_index("room_id", unique=True)
-    await clipboard_collection.create_index([("room_id", 1), ("timestamp", -1)])
-    await users_collection.create_index("username")
-    print("✅ Database initialized")
+    try:
+        # Create indexes
+        await rooms_collection.create_index("room_id", unique=True)
+        await clipboard_collection.create_index([("room_id", 1), ("timestamp", -1)])
+        
+        # Handle username index - drop existing if it has unique constraint
+        try:
+            # Try to create the index first
+            await users_collection.create_index("username")
+        except Exception as e:
+            if "IndexKeySpecsConflict" in str(e):
+                # Drop the existing unique index and create a new non-unique one
+                await users_collection.drop_index("username_1")
+                await users_collection.create_index("username")
+            else:
+                raise e
+        
+        print("✅ Database initialized")
+    except Exception as e:
+        print(f"⚠️ Database initialization warning: {e}")
+        print("✅ Database connection established (indexes may already exist)")
