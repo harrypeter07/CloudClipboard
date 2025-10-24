@@ -608,29 +608,11 @@ class ClipboardManagerApp:
     
     def run(self):
         """Main entry point"""
-        # Check if already authenticated
-        if all([self.username, self.room_id, self.password]):
-            # Try to verify session
-            try:
-                response = requests.post(
-                    f"{API_URL}/api/room/join",
-                    json={
-                        "room_id": self.room_id,
-                        "password": self.password,
-                        "username": self.username
-                    },
-                    timeout=10
-                )
-                
-                if response.status_code == 200:
-                    # Session valid, start app
-                    self.start_system_tray()
-                    return
-            except:
-                pass
+        # Always show authentication window first
+        print("DEBUG: Starting CloudClipboard application...")
+        print("DEBUG: Showing authentication window...")
         
         # Show auth window
-        print("DEBUG: Showing authentication window...")
         auth = AuthWindow(self.on_auth_success)
         print("DEBUG: AuthWindow created, calling show()...")
         auth.show()
