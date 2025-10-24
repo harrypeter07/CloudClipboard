@@ -896,8 +896,16 @@ Ctrl+Shift+7  →  Secret paste last item
             from clipboard_manager import ClipboardManagerApp
             self.clipboard_manager = ClipboardManagerApp(username, room_id, password)
             
-            # Start the system tray and monitoring
-            self.clipboard_manager.start_system_tray()
+            # Start the system tray and monitoring in a separate thread
+            import threading
+            def start_tray():
+                try:
+                    self.clipboard_manager.start_system_tray()
+                except Exception as e:
+                    self.log_message(f"Error starting system tray: {e}")
+            
+            tray_thread = threading.Thread(target=start_tray, daemon=True)
+            tray_thread.start()
             
             self.log_message("Clipboard manager started successfully")
         except Exception as e:
