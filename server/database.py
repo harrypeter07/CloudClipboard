@@ -33,7 +33,7 @@ async def init_db():
             else:
                 raise e
         
-        print("✅ Database initialized")
+        print("Database initialized successfully")
     except Exception as e:
-        print(f"⚠️ Database initialization warning: {e}")
-        print("✅ Database connection established (indexes may already exist)")
+        print(f"Database initialization warning: {e}")
+        print("Database connection established (indexes may already exist)")
