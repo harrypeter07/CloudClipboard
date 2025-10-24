@@ -371,8 +371,14 @@ Ctrl+Shift+7 - Secret paste
         
         # Start clipboard manager
         self.log_message("Starting clipboard manager...")
-        from clipboard_manager import ClipboardManagerApp
-        self.clipboard_manager = ClipboardManagerApp(username, room_id, password)
+        try:
+            from clipboard_manager import ClipboardManagerApp
+            self.clipboard_manager = ClipboardManagerApp(username, room_id, password)
+            self.log_message("Clipboard manager started successfully")
+        except Exception as e:
+            self.log_message(f"Error starting clipboard manager: {e}")
+            messagebox.showerror("Error", f"Failed to start clipboard manager: {e}")
+            return
         
         # Enable controls
         self.monitoring_check.config(state=tk.NORMAL)
