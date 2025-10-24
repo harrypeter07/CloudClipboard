@@ -318,8 +318,22 @@ class DashboardWindow:
             return
         
         for item in items[:20]:  # Show last 20 items
-            timestamp = datetime.fromisoformat(item['timestamp'].replace('Z', '+00:00'))
-            time_str = timestamp.strftime("%H:%M:%S")
+            try:
+                # Handle different timestamp formats
+                timestamp_str = item['timestamp']
+                if 'T' in timestamp_str:
+                    # ISO format
+                    if timestamp_str.endswith('Z'):
+                        timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                    else:
+                        timestamp = datetime.fromisoformat(timestamp_str)
+                else:
+                    # Try parsing as regular datetime
+                    timestamp = datetime.fromisoformat(timestamp_str)
+                time_str = timestamp.strftime("%H:%M:%S")
+            except Exception as e:
+                # Fallback to raw timestamp
+                time_str = str(item['timestamp'])[:8]
             
             if item['type'] == 'text':
                 content = item['content'][:50] + "..." if len(item['content']) > 50 else item['content']

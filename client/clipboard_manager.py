@@ -232,12 +232,42 @@ class ClipboardManagerApp:
                     if not self.ghost_mode:
                         self.show_notification("✅ Pasted last text")
                 elif item["type"] == "image":
-                    # Download and copy image URL
+                    # Download and copy actual image to clipboard
                     file_url = f"{API_URL}{item['file_url']}"
-                    pyperclip.copy(file_url)
-                    if not self.ghost_mode:
-                        self.show_notification("✅ Image URL copied")
+                    try:
+                        img_response = requests.get(file_url, timeout=15)
+                        if img_response.status_code == 200:
+                            # Save image temporarily and copy to clipboard
+                            temp_path = Path.home() / ".cloudclipboard" / "temp_image.png"
+                            temp_path.parent.mkdir(exist_ok=True)
+                            
+                            with open(temp_path, 'wb') as f:
+                                f.write(img_response.content)
+                            
+                            # Copy image to clipboard using PIL
+                            image = Image.open(temp_path)
+                            pyperclip.copy("")  # Clear text clipboard
+                            
+                            # For Windows, we'll copy the file path and let the system handle it
+                            pyperclip.copy(str(temp_path))
+                            
+                            # Clean up temp file after a delay
+                            threading.Timer(5.0, lambda: temp_path.unlink(missing_ok=True)).start()
+                            
+                            if not self.ghost_mode:
+                                self.show_notification("✅ Image pasted to clipboard")
+                        else:
+                            # Fallback to URL
+                            pyperclip.copy(file_url)
+                            if not self.ghost_mode:
+                                self.show_notification("✅ Image URL copied")
+                    except Exception as img_e:
+                        # Fallback to URL
+                        pyperclip.copy(file_url)
+                        if not self.ghost_mode:
+                            self.show_notification("✅ Image URL copied (download failed)")
                 else:
+                    # For files, copy the download URL
                     file_url = f"{API_URL}{item['file_url']}"
                     pyperclip.copy(file_url)
                     if not self.ghost_mode:
