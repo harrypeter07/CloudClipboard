@@ -202,8 +202,6 @@ class ClipboardManagerApp:
             except Exception as e:
                 print(f"Clipboard monitoring error: {e}")
                 time.sleep(1)
-            
-            time.sleep(0.5)
     
     def start_monitoring(self, icon=None, item=None):
         """Start clipboard monitoring"""
