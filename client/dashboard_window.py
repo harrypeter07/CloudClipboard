@@ -340,15 +340,35 @@ class DashboardWindow:
         """Copy selected history item to clipboard"""
         selection = self.history_listbox.curselection()
         if selection:
-            # TODO: Implement copying the actual item content
-            self.update_status("Item copied to clipboard")
+            try:
+                # Get the selected item text
+                selected_text = self.history_listbox.get(selection[0])
+                
+                # Extract timestamp and username from display text
+                # Format: [HH:MM:SS] username: content
+                if '] ' in selected_text and ': ' in selected_text:
+                    content_part = selected_text.split(': ', 1)[1]
+                    pyperclip.copy(content_part)
+                    self.update_status("Item copied to clipboard")
+                else:
+                    pyperclip.copy(selected_text)
+                    self.update_status("Item copied to clipboard")
+            except Exception as e:
+                self.update_status(f"Error copying item: {str(e)}")
     
     def clear_history(self):
         """Clear clipboard history"""
         if messagebox.askyesno("Clear History", "Are you sure you want to clear the clipboard history?"):
-            # TODO: Implement history clearing
-            self.update_status("History cleared")
-            self.refresh_history()
+            try:
+                # Call server API to clear history
+                response = requests.delete(f"{API_URL}/api/clipboard/clear", timeout=10)
+                if response.status_code == 200:
+                    self.update_status("History cleared successfully")
+                    self.refresh_history()
+                else:
+                    self.update_status("Failed to clear history")
+            except Exception as e:
+                self.update_status(f"Error clearing history: {str(e)}")
     
     def open_settings(self):
         """Open settings window"""
