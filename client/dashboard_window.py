@@ -262,6 +262,69 @@ class DashboardWindow:
         
         ttk.Button(share_window, text="Close", command=share_window.destroy).pack(pady=10)
     
+    def show_room_members(self):
+        """Show room members dialog"""
+        members_window = tk.Toplevel(self.window)
+        members_window.title("Room Members")
+        members_window.geometry("400x300")
+        members_window.resizable(False, False)
+        
+        # Center the window
+        members_window.transient(self.window)
+        members_window.grab_set()
+        
+        # Title
+        ttk.Label(members_window, text="Room Members", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        # Members list
+        members_frame = ttk.Frame(members_window)
+        members_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
+        
+        # Listbox with scrollbar
+        list_frame = ttk.Frame(members_frame)
+        list_frame.pack(fill=tk.BOTH, expand=True)
+        
+        members_listbox = tk.Listbox(list_frame, font=("Arial", 10))
+        scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=members_listbox.yview)
+        members_listbox.configure(yscrollcommand=scrollbar.set)
+        
+        members_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Status label
+        status_label = ttk.Label(members_frame, text="Loading members...", font=("Arial", 9))
+        status_label.pack(pady=5)
+        
+        def fetch_members():
+            try:
+                response = requests.get(f"{API_URL}/api/room/{self.room_id}/members", timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    members = data.get("members", [])
+                    
+                    # Update UI in main thread
+                    members_window.after(0, lambda: update_members_display(members))
+                else:
+                    members_window.after(0, lambda: status_label.config(text="Failed to load members"))
+            except Exception as e:
+                members_window.after(0, lambda: status_label.config(text=f"Error: {str(e)}"))
+        
+        def update_members_display(members):
+            members_listbox.delete(0, tk.END)
+            if members:
+                for member in members:
+                    members_listbox.insert(tk.END, f"👤 {member}")
+                status_label.config(text=f"Found {len(members)} members")
+            else:
+                members_listbox.insert(tk.END, "No members found")
+                status_label.config(text="No members in room")
+        
+        # Fetch members in background
+        threading.Thread(target=fetch_members, daemon=True).start()
+        
+        # Close button
+        ttk.Button(members_window, text="Close", command=members_window.destroy).pack(pady=10)
+    
     def toggle_app(self):
         """Toggle app enable/disable"""
         self.app_enabled = self.app_var.get()
