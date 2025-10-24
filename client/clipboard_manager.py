@@ -630,9 +630,24 @@ class ClipboardManagerApp:
                 pass
         
         # Show auth window
+        print("DEBUG: Showing authentication window...")
         auth = AuthWindow(self.on_auth_success)
+        print("DEBUG: AuthWindow created, calling show()...")
         auth.show()
+        print("DEBUG: Auth window closed")
 
 if __name__ == "__main__":
-    app = ClipboardManagerApp()
-    app.run()
+    try:
+        print("DEBUG: Starting CloudClipboard application...")
+        app = ClipboardManagerApp()
+        print("DEBUG: ClipboardManagerApp created, calling run()...")
+        app.run()
+        print("DEBUG: Application finished")
+    except Exception as e:
+        print(f"ERROR: Application failed to start: {e}")
+        import tkinter as tk
+        from tkinter import messagebox
+        root = tk.Tk()
+        root.withdraw()  # Hide the main window
+        messagebox.showerror("CloudClipboard Error", f"Failed to start application:\n{e}")
+        root.destroy()

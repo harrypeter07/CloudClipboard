@@ -250,6 +250,11 @@ class AuthWindow:
     
     def show(self):
         """Show and run the authentication window"""
+        # Ensure window is visible and on top
+        self.window.lift()
+        self.window.attributes('-topmost', True)
+        self.window.after_idle(lambda: self.window.attributes('-topmost', False))
+        self.window.focus_force()
         self.window.mainloop()
     
     def run(self):
