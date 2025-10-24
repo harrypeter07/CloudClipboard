@@ -485,22 +485,28 @@ async def get_all_clipboard_content():
 async def download_clipboard_item(item_id: str):
     """Download a specific clipboard item"""
     try:
-        item = await clipboard_collection.find_one({"_id": item_id})
+        # Use the correct ID field that we store in the database
+        item = await clipboard_collection.find_one({"id": item_id})
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         
         if item["type"] == "text":
             return JSONResponse(content={"content": item["content"]})
         elif item["type"] in ["file", "image"]:
-            file_path = item.get("file_path")
-            if file_path and os.path.exists(file_path):
-                return FileResponse(
-                    path=file_path,
-                    filename=item.get("filename", "clipboard_item"),
-                    media_type="application/octet-stream"
-                )
+            filename = item.get("filename")
+            if filename:
+                file_path = UPLOAD_DIR / filename
+                if file_path.exists():
+                    return FileResponse(
+                        path=file_path,
+                        filename=item.get("filename", "clipboard_item"),
+                        media_type="application/octet-stream"
+                    )
+                else:
+                    logger.warning(f"File not found on disk: {file_path}")
+                    raise HTTPException(status_code=404, detail="File not found on disk")
             else:
-                raise HTTPException(status_code=404, detail="File not found")
+                raise HTTPException(status_code=404, detail="No filename in item")
         else:
             raise HTTPException(status_code=400, detail="Unsupported item type")
     except Exception as e:
