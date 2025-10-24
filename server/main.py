@@ -182,8 +182,16 @@ async def save_image(
     file: UploadFile = File(...)
 ):
     """Save image clipboard"""
+    client_ip = request.client.host if hasattr(request, 'client') else "unknown"
+    
+    # Validate file size
+    if file.size and file.size > MAX_FILE_SIZE:
+        logger.warning(f"❌ Image upload failed - file too large: {file.size} bytes from {client_ip}")
+        raise HTTPException(status_code=413, detail="File too large (max 50MB)")
+    
     room = await rooms_collection.find_one({"room_id": room_id})
     if not room:
+        logger.warning(f"❌ Image upload failed - room not found: {room_id} from {client_ip}")
         raise HTTPException(status_code=404, detail="Room not found")
     
     item_id = str(uuid.uuid4())
@@ -207,6 +215,7 @@ async def save_image(
     }
     
     await clipboard_collection.insert_one(clipboard_data)
+    logger.info(f"🖼️ Image saved: {username} in {room_id} - {filename} from {client_ip}")
     return {"status": "success", "id": item_id, "file_url": clipboard_data["file_url"]}
 
 @app.post("/api/clipboard/file")
