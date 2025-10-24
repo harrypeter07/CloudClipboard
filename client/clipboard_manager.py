@@ -21,7 +21,7 @@ from dashboard_window import DashboardWindow
 from config import CONFIG_FILE, API_URL, HOTKEY_HISTORY, HOTKEY_GHOST_MODE, HOTKEY_GHOST_PASTE
 
 class ClipboardManagerApp:
-    def __init__(self):
+    def __init__(self, username=None, room_id=None, password=None):
         self.monitoring = False
         self.ghost_mode = False
         self.monitor_thread = None
@@ -30,9 +30,9 @@ class ClipboardManagerApp:
         self.last_hash = ""
         
         # User session
-        self.username = None
-        self.room_id = None
-        self.password = None
+        self.username = username
+        self.room_id = room_id
+        self.password = password
         
         # Dashboard window
         self.dashboard = None
@@ -608,15 +608,16 @@ class ClipboardManagerApp:
     
     def run(self):
         """Main entry point"""
-        # Always show authentication window first
+        # Always show main window first
         print("DEBUG: Starting CloudClipboard application...")
-        print("DEBUG: Showing authentication window...")
+        print("DEBUG: Showing main window...")
         
-        # Show auth window
-        auth = AuthWindow(self.on_auth_success)
-        print("DEBUG: AuthWindow created, calling show()...")
-        auth.show()
-        print("DEBUG: Auth window closed")
+        # Show main window
+        from main_window import MainWindow
+        main_window = MainWindow()
+        print("DEBUG: MainWindow created, calling run()...")
+        main_window.run()
+        print("DEBUG: Main window closed")
 
 if __name__ == "__main__":
     try:
