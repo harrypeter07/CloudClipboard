@@ -179,10 +179,11 @@ async def save_text(item: TextClipboard, request: Request):
 async def save_image(
     room_id: str = Form(...),
     username: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    request: Request = None
 ):
     """Save image clipboard"""
-    client_ip = request.client.host if hasattr(request, 'client') else "unknown"
+    client_ip = request.client.host if request and hasattr(request, 'client') else "unknown"
     
     # Validate file size
     if file.size and file.size > MAX_FILE_SIZE:
@@ -222,10 +223,11 @@ async def save_image(
 async def save_file(
     room_id: str = Form(...),
     username: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    request: Request = None
 ):
     """Save file/folder clipboard"""
-    client_ip = request.client.host if hasattr(request, 'client') else "unknown"
+    client_ip = request.client.host if request and hasattr(request, 'client') else "unknown"
     
     # Validate file size
     if file.size and file.size > MAX_FILE_SIZE:
