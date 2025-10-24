@@ -19,11 +19,12 @@ import pyperclip
 from config import API_URL, CONFIG_FILE
 
 class DashboardWindow:
-    def __init__(self, parent, username, room_id, password):
+    def __init__(self, parent, username, room_id, password, clipboard_manager=None):
         self.parent = parent
         self.username = username
         self.room_id = room_id
         self.password = password
+        self.clipboard_manager = clipboard_manager
         
         # App state
         self.app_enabled = True
@@ -260,23 +261,34 @@ class DashboardWindow:
     def toggle_app(self):
         """Toggle app enable/disable"""
         self.app_enabled = self.app_var.get()
+        if self.clipboard_manager:
+            if self.app_enabled:
+                self.clipboard_manager.start_monitoring()
+            else:
+                self.clipboard_manager.stop_monitoring()
         status = "enabled" if self.app_enabled else "disabled"
         self.update_status(f"CloudClipboard {status}")
-        # TODO: Implement actual app toggle logic
     
     def toggle_ghost_mode(self):
         """Toggle ghost mode"""
         self.ghost_mode = self.ghost_var.get()
+        if self.clipboard_manager:
+            self.clipboard_manager.ghost_mode = self.ghost_mode
+            self.clipboard_manager.update_icon()
         status = "enabled" if self.ghost_mode else "disabled"
         self.update_status(f"Ghost mode {status}")
-        # TODO: Implement actual ghost mode logic
     
     def toggle_auto_sync(self):
         """Toggle auto sync"""
         self.auto_sync = self.sync_var.get()
+        if self.clipboard_manager:
+            # Auto sync is controlled by monitoring state
+            if self.auto_sync and not self.clipboard_manager.monitoring:
+                self.clipboard_manager.start_monitoring()
+            elif not self.auto_sync and self.clipboard_manager.monitoring:
+                self.clipboard_manager.stop_monitoring()
         status = "enabled" if self.auto_sync else "disabled"
         self.update_status(f"Auto sync {status}")
-        # TODO: Implement actual auto sync logic
     
     def refresh_history(self):
         """Refresh clipboard history"""

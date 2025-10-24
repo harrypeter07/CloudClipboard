@@ -501,7 +501,8 @@ class ClipboardManagerApp:
                 parent=None,  # No parent window
                 username=self.username,
                 room_id=self.room_id,
-                password=self.password
+                password=self.password,
+                clipboard_manager=self  # Pass self to dashboard
             )
     
     def show_dashboard(self, icon=None, item=None):
