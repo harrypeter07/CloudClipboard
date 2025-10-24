@@ -135,6 +135,10 @@ class DashboardWindow:
         # Share button
         share_btn = ttk.Button(header_frame, text="Share Room", command=self.share_room)
         share_btn.grid(row=1, column=2, padx=(10, 0))
+        
+        # Room members button
+        members_btn = ttk.Button(header_frame, text="👥 Members", command=self.show_room_members)
+        members_btn.grid(row=2, column=2, padx=(10, 0))
     
     def create_controls(self, parent):
         """Create controls section"""
