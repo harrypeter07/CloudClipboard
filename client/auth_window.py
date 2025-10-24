@@ -248,5 +248,10 @@ class AuthWindow:
         with open(CONFIG_FILE, 'w') as f:
             json.dump(config, f)
     
-    def run(self):
+    def show(self):
+        """Show and run the authentication window"""
         self.window.mainloop()
+    
+    def run(self):
+        """Alias for show()"""
+        self.show()

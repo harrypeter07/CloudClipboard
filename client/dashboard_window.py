@@ -357,7 +357,14 @@ class DashboardWindow:
             # Import and show auth window
             try:
                 from auth_window import AuthWindow
-                auth_window = AuthWindow()
+                def on_auth_success(username, room_id, password):
+                    # Restart the application
+                    import sys
+                    import os
+                    python = sys.executable
+                    os.execl(python, python, *sys.argv)
+                
+                auth_window = AuthWindow(on_auth_success)
                 auth_window.show()
             except Exception as e:
                 print(f"Error opening auth window: {e}")
