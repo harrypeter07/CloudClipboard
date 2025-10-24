@@ -191,7 +191,7 @@ class ClipboardManagerApp:
                         # Only upload if image changed and debounce passed
                         if img_hash != self.last_image_hash and current_time - self.last_upload_time > self.upload_debounce:
                             img_buffer.seek(0)
-                            self.upload_to_server("image", ("clipboard_image.png", img_buffer, "image/png"))
+                            self.upload_to_server("image", img_buffer)
                             self.last_image_hash = img_hash
                             self.last_upload_time = current_time
                 except Exception as e:

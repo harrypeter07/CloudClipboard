@@ -304,6 +304,407 @@ async def api_info():
 async def health_check():
     return {"status": "healthy"}
 
+@app.get("/dashboard", response_class=HTMLResponse)
+async def web_dashboard():
+    """Web dashboard for viewing clipboard data"""
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CloudClipboard Dashboard</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+            
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+            }
+            
+            .header p {
+                font-size: 1.2em;
+                opacity: 0.9;
+            }
+            
+            .controls {
+                padding: 30px;
+                background: #f8f9fa;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .room-input {
+                display: flex;
+                gap: 15px;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .room-input input {
+                padding: 12px 20px;
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                font-size: 16px;
+                min-width: 200px;
+            }
+            
+            .room-input button {
+                padding: 12px 25px;
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+            
+            .room-input button:hover {
+                background: #2980b9;
+            }
+            
+            .stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                padding: 30px;
+            }
+            
+            .stat-card {
+                background: white;
+                padding: 25px;
+                border-radius: 10px;
+                text-align: center;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                border-left: 4px solid #3498db;
+            }
+            
+            .stat-card h3 {
+                font-size: 2em;
+                color: #2c3e50;
+                margin-bottom: 10px;
+            }
+            
+            .stat-card p {
+                color: #7f8c8d;
+                font-size: 1.1em;
+            }
+            
+            .content {
+                padding: 30px;
+            }
+            
+            .clipboard-items {
+                display: grid;
+                gap: 15px;
+            }
+            
+            .item-card {
+                background: white;
+                border: 1px solid #e9ecef;
+                border-radius: 10px;
+                padding: 20px;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            
+            .item-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            }
+            
+            .item-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            
+            .item-type {
+                background: #3498db;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-size: 0.9em;
+                font-weight: bold;
+            }
+            
+            .item-time {
+                color: #7f8c8d;
+                font-size: 0.9em;
+            }
+            
+            .item-user {
+                color: #2c3e50;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            
+            .item-content {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                border-left: 4px solid #3498db;
+                word-wrap: break-word;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .no-data {
+                text-align: center;
+                padding: 60px;
+                color: #7f8c8d;
+            }
+            
+            .no-data h3 {
+                font-size: 1.5em;
+                margin-bottom: 15px;
+            }
+            
+            .loading {
+                text-align: center;
+                padding: 40px;
+                color: #7f8c8d;
+            }
+            
+            .error {
+                background: #e74c3c;
+                color: white;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+                text-align: center;
+            }
+            
+            @media (max-width: 768px) {
+                .room-input {
+                    flex-direction: column;
+                }
+                
+                .room-input input {
+                    min-width: 100%;
+                }
+                
+                .stats {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>☁️ CloudClipboard Dashboard</h1>
+                <p>Real-time Clipboard Synchronization Analytics</p>
+            </div>
+            
+            <div class="controls">
+                <div class="room-input">
+                    <input type="text" id="roomId" placeholder="Enter Room ID" />
+                    <button onclick="loadRoomData()">📊 Load Room Data</button>
+                </div>
+            </div>
+            
+            <div id="stats" class="stats" style="display: none;">
+                <div class="stat-card">
+                    <h3 id="totalItems">0</h3>
+                    <p>Total Items</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalUsers">0</h3>
+                    <p>Active Users</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="textItems">0</h3>
+                    <p>Text Items</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="fileItems">0</h3>
+                    <p>File Items</p>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div id="content">
+                    <div class="no-data">
+                        <h3>🔍 Enter a Room ID to view data</h3>
+                        <p>Use the input field above to load clipboard data for any room</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            async function loadRoomData() {
+                const roomId = document.getElementById('roomId').value.trim();
+                if (!roomId) {
+                    alert('Please enter a Room ID');
+                    return;
+                }
+                
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = '<div class="loading">🔄 Loading room data...</div>';
+                
+                try {
+                    // Load room info
+                    const roomResponse = await fetch(`/api/room/info/${roomId}`);
+                    if (!roomResponse.ok) {
+                        throw new Error('Room not found or access denied');
+                    }
+                    const roomData = await roomResponse.json();
+                    
+                    // Load clipboard history
+                    const historyResponse = await fetch(`/api/clipboard/history/${roomId}`);
+                    const historyData = await historyResponse.ok ? await historyResponse.json() : { items: [] };
+                    
+                    // Update stats
+                    document.getElementById('totalItems').textContent = roomData.total_items || 0;
+                    document.getElementById('totalUsers').textContent = roomData.members?.length || 0;
+                    document.getElementById('textItems').textContent = historyData.items?.filter(item => item.type === 'text').length || 0;
+                    document.getElementById('fileItems').textContent = historyData.items?.filter(item => item.type !== 'text').length || 0;
+                    document.getElementById('stats').style.display = 'grid';
+                    
+                    // Display items
+                    displayItems(historyData.items || []);
+                    
+                } catch (error) {
+                    contentDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                }
+            }
+            
+            function displayItems(items) {
+                const contentDiv = document.getElementById('content');
+                
+                if (items.length === 0) {
+                    contentDiv.innerHTML = '<div class="no-data"><h3>📭 No clipboard items found</h3><p>This room has no clipboard history yet</p></div>';
+                    return;
+                }
+                
+                let html = '<div class="clipboard-items">';
+                
+                items.forEach(item => {
+                    const typeIcon = {
+                        'text': '📝',
+                        'image': '🖼️',
+                        'file': '📄',
+                        'folder': '📁'
+                    }[item.type] || '📋';
+                    
+                    const content = item.type === 'text' 
+                        ? item.content.substring(0, 200) + (item.content.length > 200 ? '...' : '')
+                        : `${item.type.toUpperCase()}: ${item.filename || 'Unknown'}`;
+                    
+                    html += `
+                        <div class="item-card">
+                            <div class="item-header">
+                                <span class="item-type">${typeIcon} ${item.type.toUpperCase()}</span>
+                                <span class="item-time">${new Date(item.timestamp).toLocaleString()}</span>
+                            </div>
+                            <div class="item-user">👤 ${item.username}</div>
+                            <div class="item-content">${content}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                contentDiv.innerHTML = html;
+            }
+            
+            // Allow Enter key to load data
+            document.getElementById('roomId').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadRoomData();
+                }
+            });
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.get("/api/room/info/{room_id}")
+async def get_room_info(room_id: str):
+    """Get detailed room information"""
+    try:
+        room = await rooms_collection.find_one({"room_id": room_id})
+        if not room:
+            raise HTTPException(status_code=404, detail="Room not found")
+        
+        # Get members
+        members = await users_collection.find({"room_id": room_id}).to_list(length=None)
+        
+        # Get total items count
+        total_items = await clipboard_collection.count_documents({"room_id": room_id})
+        
+        return {
+            "room_id": room_id,
+            "created_at": room.get("created_at"),
+            "members": [
+                {
+                    "username": member.get("username"),
+                    "last_active": member.get("last_active"),
+                    "items_count": await clipboard_collection.count_documents({
+                        "room_id": room_id,
+                        "username": member.get("username")
+                    })
+                }
+                for member in members
+            ],
+            "total_items": total_items
+        }
+    except Exception as e:
+        logger.error(f"Error getting room info: {e}")
+        raise HTTPException(status_code=500, detail="Error getting room info")
+
+@app.get("/api/room/members/{room_id}")
+async def get_room_members(room_id: str):
+    """Get room members"""
+    try:
+        members = await users_collection.find({"room_id": room_id}).to_list(length=None)
+        return {
+            "room_id": room_id,
+            "members": [
+                {
+                    "username": member.get("username"),
+                    "last_active": member.get("last_active"),
+                    "items_count": await clipboard_collection.count_documents({
+                        "room_id": room_id,
+                        "username": member.get("username")
+                    })
+                }
+                for member in members
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Error getting room members: {e}")
+        raise HTTPException(status_code=500, detail="Error getting room members")
+
 # Web Service Endpoints for viewing and downloading content
 @app.get("/", response_class=HTMLResponse)
 async def web_interface():
