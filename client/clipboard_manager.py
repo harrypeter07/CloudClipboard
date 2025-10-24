@@ -522,7 +522,7 @@ class ClipboardManagerApp:
         keyboard.add_hotkey(HOTKEY_GHOST_MODE, self.toggle_ghost_mode)
         
         # Additional hotkey for ghost paste
-        keyboard.add_hotkey('ctrl+shift+7', self.paste_last_item)
+        keyboard.add_hotkey(HOTKEY_GHOST_PASTE, self.paste_last_item)
         
         # Create system tray menu
         menu = pystray.Menu(
