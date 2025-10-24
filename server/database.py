@@ -19,5 +19,5 @@ async def init_db():
     # Create indexes
     await rooms_collection.create_index("room_id", unique=True)
     await clipboard_collection.create_index([("room_id", 1), ("timestamp", -1)])
-    await users_collection.create_index("username", unique=True)
+    await users_collection.create_index("username")
     print("✅ Database initialized")
