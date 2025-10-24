@@ -41,6 +41,11 @@ class ClipboardManagerApp:
         self.last_notification_time = 0
         self.notification_cooldown = 2  # seconds
         
+        # Upload debounce
+        self.last_upload_time = 0
+        self.upload_debounce = 2.0  # 2 seconds debounce
+        self.last_image_hash = ""
+        
         # Load config if exists
         if CONFIG_FILE.exists():
             self.load_config()
@@ -145,42 +150,58 @@ class ClipboardManagerApp:
         """Background clipboard monitoring"""
         while self.monitoring:
             try:
+                current_time = time.time()
+                
+                # Check text clipboard
                 current_text = pyperclip.paste()
                 current_hash = self.get_clipboard_hash(current_text)
                 
                 if current_hash != self.last_hash and current_text:
-                    # Check if it's a file path
-                    if os.path.exists(current_text):
-                        path = Path(current_text)
-                        if path.is_dir():
-                            zip_buffer = self.zip_folder(current_text)
-                            zip_name = f"{path.name}.zip"
-                            self.upload_to_server("folder", (zip_name, zip_buffer, "application/zip"))
-                        elif path.is_file():
-                            with open(current_text, 'rb') as f:
-                                file_name = path.name
-                                self.upload_to_server("file", (file_name, f, "application/octet-stream"))
-                    else:
-                        # Plain text
-                        self.upload_to_server("text", current_text)
-                    
-                    self.last_hash = current_hash
-                    self.last_clipboard = current_text
+                    # Check debounce
+                    if current_time - self.last_upload_time > self.upload_debounce:
+                        # Check if it's a file path
+                        if os.path.exists(current_text):
+                            path = Path(current_text)
+                            if path.is_dir():
+                                zip_buffer = self.zip_folder(current_text)
+                                zip_name = f"{path.name}.zip"
+                                self.upload_to_server("folder", (zip_name, zip_buffer, "application/zip"))
+                            elif path.is_file():
+                                with open(current_text, 'rb') as f:
+                                    file_name = path.name
+                                    self.upload_to_server("file", (file_name, f, "application/octet-stream"))
+                        else:
+                            # Plain text
+                            self.upload_to_server("text", current_text)
+                        
+                        self.last_hash = current_hash
+                        self.last_clipboard = current_text
+                        self.last_upload_time = current_time
                 
-                # Check for images
+                # Check for images (separate from text)
                 try:
                     image = ImageGrab.grabclipboard()
                     if image and hasattr(image, 'save'):
+                        # Create image hash
                         img_buffer = io.BytesIO()
                         image.save(img_buffer, format='PNG')
-                        img_buffer.seek(0)
-                        self.upload_to_server("image", img_buffer)
-                        self.last_hash = self.get_clipboard_hash(img_buffer.getvalue())
-                except:
-                    pass
-                    
+                        img_data = img_buffer.getvalue()
+                        img_hash = hashlib.md5(img_data).hexdigest()
+                        
+                        # Only upload if image changed and debounce passed
+                        if img_hash != self.last_image_hash and current_time - self.last_upload_time > self.upload_debounce:
+                            img_buffer.seek(0)
+                            self.upload_to_server("image", ("clipboard_image.png", img_buffer, "image/png"))
+                            self.last_image_hash = img_hash
+                            self.last_upload_time = current_time
+                except Exception as e:
+                    pass  # Ignore image errors
+                
+                time.sleep(0.5)  # Check every 500ms
+                
             except Exception as e:
-                pass
+                print(f"Clipboard monitoring error: {e}")
+                time.sleep(1)
             
             time.sleep(0.5)
     
