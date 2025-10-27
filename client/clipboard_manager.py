@@ -161,10 +161,12 @@ class ClipboardManagerApp:
     
     def monitor_clipboard(self):
         """Background clipboard monitoring"""
+        print("DEBUG: Clipboard monitoring thread started")
         while self.monitoring:
             try:
                 # Check if user is authenticated before monitoring
                 if not self.username or not self.room_id:
+                    print("DEBUG: Not authenticated, waiting...")
                     time.sleep(1)
                     continue
                 
@@ -175,8 +177,10 @@ class ClipboardManagerApp:
                 current_hash = self.get_clipboard_hash(current_text)
                 
                 if current_hash != self.last_hash and current_text:
+                    print(f"DEBUG: New text detected: {current_text[:50]}...")
                     # Check debounce
                     if current_time - self.last_upload_time > self.upload_debounce:
+                        print("DEBUG: Uploading text to server...")
                         # Check if it's a file path
                         if os.path.exists(current_text):
                             path = Path(current_text)
@@ -196,48 +200,58 @@ class ClipboardManagerApp:
                         self.last_hash = current_hash
                         self.last_clipboard = current_text
                         self.last_upload_time = current_time
+                        print("DEBUG: Text uploaded successfully")
                 
-                        # Check for images (separate from text)
-                        try:
-                            image = ImageGrab.grabclipboard()
-                            if image and hasattr(image, 'save'):
-                                # Create image hash
-                                img_buffer = io.BytesIO()
-                                image.save(img_buffer, format='PNG')
-                                img_data = img_buffer.getvalue()
-                                img_hash = hashlib.md5(img_data).hexdigest()
-                                
-                                # Only upload if image changed and debounce passed
-                                if img_hash != self.last_image_hash and current_time - self.last_upload_time > self.upload_debounce:
-                                    img_buffer.seek(0)
-                                    # Convert image to base64 for upload
-                                    import base64
-                                    base64_data = base64.b64encode(img_data).decode('utf-8')
-                                    self.upload_to_server("image", base64_data)
-                                    self.last_image_hash = img_hash
-                                    self.last_upload_time = current_time
-                        except Exception as e:
-                            pass  # Ignore image errors
+                # Check for images (separate from text)
+                try:
+                    image = ImageGrab.grabclipboard()
+                    if image and hasattr(image, 'save'):
+                        print("DEBUG: Image detected in clipboard")
+                        # Create image hash
+                        img_buffer = io.BytesIO()
+                        image.save(img_buffer, format='PNG')
+                        img_data = img_buffer.getvalue()
+                        img_hash = hashlib.md5(img_data).hexdigest()
+                        
+                        # Only upload if image changed and debounce passed
+                        if img_hash != self.last_image_hash and current_time - self.last_upload_time > self.upload_debounce:
+                            print("DEBUG: Uploading image to server...")
+                            img_buffer.seek(0)
+                            # Convert image to base64 for upload
+                            import base64
+                            base64_data = base64.b64encode(img_data).decode('utf-8')
+                            self.upload_to_server("image", base64_data)
+                            self.last_image_hash = img_hash
+                            self.last_upload_time = current_time
+                            print("DEBUG: Image uploaded successfully")
+                except Exception as e:
+                    print(f"DEBUG: Image error: {e}")
                 
                 time.sleep(0.5)  # Check every 500ms
                 
             except Exception as e:
-                print(f"Clipboard monitoring error: {e}")
+                print(f"DEBUG: Clipboard monitoring error: {e}")
                 time.sleep(1)
     
     def start_monitoring(self, icon=None, item=None):
         """Start clipboard monitoring"""
+        print("DEBUG: start_monitoring called")
         if not self.monitoring:
+            print("DEBUG: Starting clipboard monitoring...")
             # Stop any existing monitoring first
             if self.monitor_thread and self.monitor_thread.is_alive():
+                print("DEBUG: Stopping existing monitoring thread")
                 self.monitoring = False
                 time.sleep(0.2)
             self.monitoring = True
             self.monitor_thread = threading.Thread(target=self.monitor_clipboard, daemon=True)
             self.monitor_thread.start()
+            print("DEBUG: Monitoring thread started")
             self.update_icon()
             if not self.ghost_mode:
                 self.show_notification("✅ Monitoring started")
+        else:
+            print("DEBUG: Monitoring already running")
     
     def stop_monitoring(self, icon=None, item=None):
         """Stop clipboard monitoring"""
