@@ -349,7 +349,7 @@ class ClipboardManagerApp:
     def _show_history_overlay(self):
         """Create beautiful overlay window showing clipboard history"""
         try:
-            # Fetch recent items from server
+            # Fetch recent items from server for current room only
             response = requests.get(f"{API_URL}/api/clipboard/history/{self.room_id}", timeout=10)
             if response.status_code == 200:
                 data = response.json()

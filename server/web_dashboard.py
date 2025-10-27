@@ -361,8 +361,9 @@ def create_web_routes(app: FastAPI):
                 
                 <div id="view" class="tab-content active">
                     <div class="room-input">
-                        <input type="text" id="roomId" placeholder="Enter Room ID" />
+                        <input type="text" id="roomId" placeholder="Enter Room ID (or 'hassan' for all data)" />
                         <button onclick="loadRoomData()">📊 Load Room Data</button>
+                        <button onclick="toggleAutoRefresh()" id="autoRefreshBtn">⏸️ Auto Refresh OFF</button>
                     </div>
                     
                     <div id="stats" class="stats" style="display: none;">
@@ -435,6 +436,27 @@ def create_web_routes(app: FastAPI):
             
             <script>
                 let currentRoomId = '';
+                let autoRefreshInterval = null;
+                
+                function toggleAutoRefresh() {
+                    const btn = document.getElementById('autoRefreshBtn');
+                    if (autoRefreshInterval) {
+                        clearInterval(autoRefreshInterval);
+                        autoRefreshInterval = null;
+                        btn.textContent = '⏸️ Auto Refresh OFF';
+                        btn.style.backgroundColor = '#6c757d';
+                    } else {
+                        if (currentRoomId) {
+                            autoRefreshInterval = setInterval(() => {
+                                loadRoomData();
+                            }, 5000); // Refresh every 5 seconds
+                            btn.textContent = '▶️ Auto Refresh ON';
+                            btn.style.backgroundColor = '#28a745';
+                        } else {
+                            alert('Please load room data first');
+                        }
+                    }
+                }
                 
                 function showTab(tabName) {
                     // Hide all tab contents

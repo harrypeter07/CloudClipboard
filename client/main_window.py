@@ -78,9 +78,6 @@ class MainWindow:
         # Control Panel Tab
         self.create_control_tab(notebook)
         
-        # Room Management Tab
-        self.create_room_tab(notebook)
-        
         # Web Dashboard Tab
         self.create_web_tab(notebook)
         
@@ -484,89 +481,6 @@ Ctrl+Shift+7  →  Secret paste last item
             bg=self.colors['light'],
             fg=self.colors['primary']
         ).pack(anchor=tk.W)
-    
-    def create_room_tab(self, notebook):
-        """Create room management tab"""
-        room_frame = tk.Frame(notebook, bg=self.colors['white'])
-        notebook.add(room_frame, text="🏠 Room Management")
-        
-        # Main container
-        main_container = tk.Frame(room_frame, bg=self.colors['white'])
-        main_container.pack(expand=True, fill=tk.BOTH, padx=30, pady=30)
-        
-        # Title
-        title_label = tk.Label(
-            main_container, 
-            text="🏠 Room Management", 
-            font=("Arial", 20, "bold"),
-            bg=self.colors['white'],
-            fg=self.colors['primary']
-        )
-        title_label.pack(pady=(0, 30))
-        
-        # Room Info Card
-        info_card = tk.Frame(main_container, bg=self.colors['light'], relief=tk.RAISED, bd=2)
-        info_card.pack(fill=tk.BOTH, expand=True, pady=10)
-        
-        info_header = tk.Frame(info_card, bg=self.colors['secondary'], height=50)
-        info_header.pack(fill=tk.X)
-        info_header.pack_propagate(False)
-        
-        tk.Label(
-            info_header,
-            text="📊 Room Information",
-            font=("Arial", 14, "bold"),
-            bg=self.colors['secondary'],
-            fg=self.colors['white']
-        ).pack(pady=15)
-        
-        # Room Info Text
-        info_content = tk.Frame(info_card, bg=self.colors['light'])
-        info_content.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        self.room_info_text = scrolledtext.ScrolledText(
-            info_content, 
-            height=15, 
-            width=70,
-            font=("Arial", 10),
-            bg=self.colors['white'],
-            fg=self.colors['primary'],
-            relief=tk.FLAT,
-            bd=5
-        )
-        self.room_info_text.pack(fill=tk.BOTH, expand=True)
-        
-        # Room Actions
-        actions_frame = tk.Frame(main_container, bg=self.colors['white'])
-        actions_frame.pack(pady=20)
-        
-        self.refresh_room_btn = tk.Button(
-            actions_frame, 
-            text="🔄 Refresh Room Info", 
-            command=self.refresh_room_info, 
-            font=("Arial", 12, "bold"),
-            bg=self.colors['secondary'],
-            fg=self.colors['white'],
-            relief=tk.FLAT,
-            padx=25,
-            pady=10,
-            cursor="hand2"
-        )
-        self.refresh_room_btn.pack(side=tk.LEFT, padx=10)
-        
-        self.show_members_btn = tk.Button(
-            actions_frame, 
-            text="👥 Show Members", 
-            command=self.show_members, 
-            font=("Arial", 12, "bold"),
-            bg=self.colors['success'],
-            fg=self.colors['white'],
-            relief=tk.FLAT,
-            padx=25,
-            pady=10,
-            cursor="hand2"
-        )
-        self.show_members_btn.pack(side=tk.LEFT, padx=10)
     
     def create_web_tab(self, notebook):
         """Create web dashboard tab"""

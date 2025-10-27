@@ -11,6 +11,6 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 CONFIG_DIR.mkdir(exist_ok=True)
 
 # Hotkeys
-HOTKEY_HISTORY = 'ctrl+shift+v'
+HOTKEY_HISTORY = 'ctrl+shift+h'  # Changed to avoid conflict
 HOTKEY_GHOST_MODE = 'ctrl+7'
-HOTKEY_GHOST_PASTE = 'ctrl+shift+7'  # For secret paste
+HOTKEY_GHOST_PASTE = 'ctrl+shift+v'  # Auto-paste last item
