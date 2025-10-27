@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 # API Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8000")  # Local server URL
+API_URL = os.getenv("API_URL", "https://cloudclipboard.onrender.com")  # Render deployment URL
 
 # Local storage
 CONFIG_DIR = Path.home() / ".cloudclipboard"

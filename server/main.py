@@ -172,7 +172,7 @@ async def save_text(item: TextClipboard, request: Request):
     }
     
     await clipboard_collection.insert_one(clipboard_data)
-    logger.info(f"📝 Text saved: {item.username} in {item.room_id} - '{content_preview}' from {client_ip}")
+    logger.info(f"Text saved: {item.username} in {item.room_id} - '{content_preview}' from {client_ip}")
     return {"status": "success", "id": clipboard_data["id"]}
 
 @app.post("/api/clipboard/image")

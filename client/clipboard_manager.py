@@ -150,6 +150,11 @@ class ClipboardManagerApp:
         """Background clipboard monitoring"""
         while self.monitoring:
             try:
+                # Check if user is authenticated before monitoring
+                if not self.username or not self.room_id:
+                    time.sleep(1)
+                    continue
+                
                 current_time = time.time()
                 
                 # Check text clipboard
@@ -168,8 +173,9 @@ class ClipboardManagerApp:
                                 self.upload_to_server("folder", (zip_name, zip_buffer, "application/zip"))
                             elif path.is_file():
                                 with open(current_text, 'rb') as f:
+                                    file_data = f.read()
                                     file_name = path.name
-                                    self.upload_to_server("file", (file_name, f, "application/octet-stream"))
+                                    self.upload_to_server("file", (file_name, file_data, "application/octet-stream"))
                         else:
                             # Plain text
                             self.upload_to_server("text", current_text)
