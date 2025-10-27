@@ -65,6 +65,32 @@ def create_web_routes(app: FastAPI):
                     margin-bottom: 10px;
                 }
                 
+                .github-section {
+                    margin-top: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }
+                
+                .github-btn {
+                    background: #24292e;
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    font-weight: bold;
+                    transition: background 0.3s;
+                }
+                
+                .github-btn:hover {
+                    background: #0366d6;
+                }
+                
+                .credits {
+                    color: #6c757d;
+                    font-size: 0.9em;
+                }
+                
                 .header p {
                     font-size: 1.2em;
                     opacity: 0.9;
@@ -351,6 +377,10 @@ def create_web_routes(app: FastAPI):
                 <div class="header">
                     <h1>☁️ CloudClipboard</h1>
                     <p>Cross-Device Clipboard Synchronization Platform</p>
+                    <div class="github-section">
+                        <a href="https://github.com/harrypeter/CloudClipboard" target="_blank" class="github-btn">🐙 GitHub</a>
+                        <span class="credits">Made by HarryPeter</span>
+                    </div>
                 </div>
                 
                 <div class="tabs">
@@ -427,8 +457,18 @@ def create_web_routes(app: FastAPI):
                             </ul>
                         </div>
                         <div style="margin: 20px 0;">
-                            <h4>🔄 Synchronization:</h4>
-                            <p>When you copy something on one device, it automatically syncs to all other devices in the same room. Use Ctrl+V on any device to paste the latest content.</p>
+                            <h4>⚠️ Disclaimer:</h4>
+                            <p style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                This application is created for <strong>educational and useful purposes only</strong>. 
+                                The developer (HarryPeter) is <strong>not responsible</strong> for any misuse, 
+                                illegal activities, or damages caused by users of this software. 
+                                Users are responsible for complying with all applicable laws and regulations.
+                            </p>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h4>📄 License:</h4>
+                            <p>This project is proprietary software. Unauthorized copying, distribution, or modification is prohibited.</p>
                         </div>
                     </div>
                 </div>

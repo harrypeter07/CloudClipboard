@@ -211,9 +211,34 @@ class MainWindow:
                                      show="*", relief=tk.FLAT, bd=5, bg=self.colors['white'])
         self.password_entry.pack(fill=tk.X, pady=(5, 0))
         
-        # Buttons with modern styling
-        button_frame = tk.Frame(form_frame, bg=self.colors['light'])
-        button_frame.pack(pady=30)
+        # Credits and Disclaimer (minimal)
+        credits_frame = tk.Frame(form_frame, bg=self.colors['light'])
+        credits_frame.pack(pady=(20, 0))
+        
+        # GitHub button
+        github_btn = tk.Button(
+            credits_frame,
+            text="🐙 GitHub",
+            command=self.open_github,
+            font=("Arial", 10),
+            bg="#24292e",
+            fg="white",
+            relief=tk.FLAT,
+            padx=15,
+            pady=5,
+            cursor="hand2"
+        )
+        github_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Credits
+        credits_label = tk.Label(
+            credits_frame,
+            text="Made by HarryPeter | Educational Use Only",
+            font=("Arial", 8),
+            bg=self.colors['light'],
+            fg=self.colors['secondary']
+        )
+        credits_label.pack(side=tk.LEFT, padx=10)
         
         self.create_room_btn = tk.Button(
             button_frame, 
@@ -721,6 +746,11 @@ Ctrl+Shift+7  →  Secret paste last item
                 self.log_message("Server is offline")
         
         threading.Thread(target=check, daemon=True).start()
+    
+    def open_github(self):
+        """Open GitHub repository in browser"""
+        import webbrowser
+        webbrowser.open("https://github.com/harrypeter/CloudClipboard")
     
     def create_room(self):
         """Create a new room"""
