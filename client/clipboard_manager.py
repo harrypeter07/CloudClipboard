@@ -107,11 +107,14 @@ class ClipboardManagerApp:
     
     def upload_to_server(self, content_type, content):
         """Upload clipboard content to server"""
+        print(f"DEBUG: upload_to_server called - room_id: {self.room_id}, username: {self.username}")
         if not all([self.room_id, self.username]):
+            print("DEBUG: Missing room_id or username, skipping upload")
             return
         
         try:
             if content_type == "text":
+                print(f"DEBUG: Uploading text to room {self.room_id}")
                 response = requests.post(
                     f"{API_URL}/api/clipboard/text",
                     json={
@@ -137,6 +140,7 @@ class ClipboardManagerApp:
                 
                 files = {"file": ("image.png", file_obj, "image/png")}
                 data = {"room_id": self.room_id, "username": self.username}
+                print(f"DEBUG: Uploading image to room {self.room_id}")
                 response = requests.post(
                     f"{API_URL}/api/clipboard/image",
                     files=files,
@@ -146,6 +150,7 @@ class ClipboardManagerApp:
             elif content_type in ["file", "folder"]:
                 files = {"file": content}
                 data = {"room_id": self.room_id, "username": self.username}
+                print(f"DEBUG: Uploading file to room {self.room_id}")
                 response = requests.post(
                     f"{API_URL}/api/clipboard/file",
                     files=files,
@@ -153,9 +158,11 @@ class ClipboardManagerApp:
                     timeout=60
                 )
             
+            print(f"DEBUG: Upload response status: {response.status_code}")
             if response.status_code == 200 and not self.ghost_mode:
                 self.show_notification(f"✅ Uploaded {content_type}")
         except Exception as e:
+            print(f"DEBUG: Upload error: {e}")
             if not self.ghost_mode:
                 self.show_notification(f"❌ Upload failed: {str(e)[:50]}")
     

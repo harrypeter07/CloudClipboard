@@ -748,7 +748,7 @@ async def get_room_members(room_id: str):
         raise HTTPException(status_code=500, detail="Error getting room members")
 
 # Web Service Endpoints for viewing and downloading content
-@app.get("/", response_class=HTMLResponse)
+@app.get("/all", response_class=HTMLResponse)
 async def web_interface():
     """Main web interface for viewing clipboard content"""
     html_content = """
@@ -928,11 +928,15 @@ async def get_stats():
         raise HTTPException(status_code=500, detail="Error getting statistics")
 
 @app.get("/api/clipboard/all")
-async def get_all_clipboard_content():
-    """Get all clipboard content"""
+async def get_all_clipboard_content(room_id: Optional[str] = None):
+    """Get all clipboard content, optionally filtered by room"""
     try:
         items = []
-        async for item in clipboard_collection.find().sort("timestamp", -1).limit(100):
+        query = {}
+        if room_id:
+            query["room_id"] = room_id
+        
+        async for item in clipboard_collection.find(query).sort("timestamp", -1).limit(100):
             items.append({
                 "id": str(item["_id"]),
                 "type": item.get("type", "unknown"),
