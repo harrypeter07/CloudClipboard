@@ -28,331 +28,394 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: var(--text-primary);
+            background: var(--background);
+            font-size: 16px;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         /* Header */
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 0;
-            position: fixed;
-            width: 100%;
+        .header {
+            background: var(--background);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            position: sticky;
             top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            backdrop-filter: blur(8px);
         }
 
-        nav {
+        .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 32px;
+            align-items: center;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: #333;
+            color: var(--text-secondary);
             font-weight: 500;
-            transition: color 0.3s;
+            font-size: 14px;
+            transition: color 0.2s ease;
         }
 
         .nav-links a:hover {
-            color: #667eea;
+            color: var(--primary);
         }
 
         .github-btn {
-            background: #24292e;
+            background: var(--text-primary);
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius);
             text-decoration: none;
-            font-weight: bold;
-            transition: background 0.3s;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid var(--text-primary);
         }
 
         .github-btn:hover {
-            background: #0366d6;
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-1px);
         }
 
         /* Hero Section */
         .hero {
-            padding: 8rem 0 4rem;
+            padding: 80px 0;
             text-align: center;
-            color: white;
+            background: linear-gradient(135deg, var(--surface) 0%, var(--background) 100%);
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            line-height: 1.1;
         }
 
         .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+            font-size: 20px;
+            margin-bottom: 40px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .download-btn {
-            background: #28a745;
+            background: var(--primary);
             color: white;
-            padding: 1rem 2rem;
+            padding: 16px 32px;
             border: none;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            border-radius: var(--radius-lg);
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
         }
 
         .download-btn:hover {
-            background: #218838;
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            box-shadow: var(--shadow-lg);
         }
 
         .download-info {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            opacity: 0.8;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-muted);
         }
 
         /* Features Section */
         .features {
-            background: white;
-            padding: 4rem 0;
+            padding: 80px 0;
+            background: var(--background);
         }
 
         .section-title {
             text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            color: #333;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 64px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
         }
 
         .feature-card {
-            background: #f8f9fa;
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            transition: transform 0.3s;
-            border: 1px solid #e9ecef;
+            background: var(--background);
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
         }
 
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 32px;
+            margin-bottom: 16px;
+            display: block;
         }
 
         .feature-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
         }
 
         .feature-card p {
-            color: #666;
+            color: var(--text-secondary);
             line-height: 1.6;
         }
 
         /* How It Works */
         .how-it-works {
-            background: #f8f9fa;
-            padding: 4rem 0;
+            padding: 80px 0;
+            background: var(--surface);
         }
 
         .steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            margin-top: 64px;
         }
 
         .step {
             text-align: center;
-            padding: 2rem;
+            padding: 24px;
         }
 
         .step-number {
-            background: #667eea;
+            background: var(--primary);
             color: white;
-            width: 60px;
-            height: 60px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0 auto 1rem;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 auto 16px;
         }
 
         .step h3 {
-            margin-bottom: 1rem;
-            color: #333;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
         }
 
         .step p {
-            color: #666;
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
         /* Download Section */
         .download-section {
-            background: white;
-            padding: 4rem 0;
+            padding: 80px 0;
+            background: var(--background);
             text-align: center;
         }
 
         .download-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem;
-            border-radius: 16px;
-            margin: 2rem 0;
-            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+            background: var(--background);
+            border: 1px solid var(--border);
+            padding: 48px;
+            border-radius: var(--radius-lg);
+            margin: 32px 0;
+            box-shadow: var(--shadow-md);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .download-card h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
         }
 
         .download-card p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+            font-size: 16px;
+            margin-bottom: 32px;
+            color: var(--text-secondary);
         }
 
         .download-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 16px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .btn-primary {
-            background: #28a745;
+            background: var(--primary);
             color: white;
-            padding: 1rem 2rem;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
         }
 
         .btn-primary:hover {
-            background: #218838;
-            transform: translateY(-2px);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
         }
 
         .btn-secondary {
-            background: transparent;
-            color: white;
-            padding: 1rem 2rem;
-            border: 2px solid white;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            background: var(--background);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
         }
 
         .btn-secondary:hover {
-            background: white;
-            color: #667eea;
+            background: var(--surface);
+            border-color: var(--primary);
+        }
+
+        .disclaimer {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 16px;
+            border-radius: var(--radius);
+            margin: 32px 0;
+            border-left: 4px solid #f59e0b;
+            font-size: 14px;
         }
 
         /* Footer */
-        footer {
-            background: #333;
+        .footer {
+            background: var(--text-primary);
             color: white;
-            padding: 3rem 0 2rem;
-            text-align: center;
+            padding: 48px 0 24px;
         }
 
         .footer-content {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
+            gap: 32px;
+            margin-bottom: 32px;
         }
 
         .footer-section h3 {
-            margin-bottom: 1rem;
-            color: #667eea;
+            margin-bottom: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .footer-section p, .footer-section a {
-            color: #ccc;
+            color: #94a3b8;
             text-decoration: none;
             line-height: 1.6;
+            font-size: 14px;
         }
 
         .footer-section a:hover {
             color: white;
         }
 
-        .disclaimer {
-            background: #fff3cd;
-            color: #856404;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 2rem 0;
-            border-left: 4px solid #ffc107;
-        }
-
         .copyright {
-            border-top: 1px solid #555;
-            padding-top: 2rem;
-            color: #999;
+            border-top: 1px solid #374151;
+            padding-top: 24px;
+            color: #6b7280;
+            font-size: 14px;
+            text-align: center;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 18px;
             }
             
             .nav-links {
@@ -362,6 +425,18 @@
             .download-buttons {
                 flex-direction: column;
                 align-items: center;
+            }
+            
+            .container {
+                padding: 0 16px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .steps {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -380,20 +455,25 @@
         .fade-in-up {
             animation: fadeInUp 0.6s ease-out;
         }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header>
-        <nav class="container">
-            <div class="logo">☁️ CloudClipboard</div>
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="logo">☁️ CloudClipboard</a>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#download">Download</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
-            <a href="https://github.com/harrypeter/CloudClipboard" class="github-btn" target="_blank">🐙 GitHub</a>
+            <a href="https://github.com/harrypeter07/CloudClipboard" class="github-btn" target="_blank">GitHub</a>
         </nav>
     </header>
 
@@ -413,34 +493,35 @@
     <section class="features" id="features">
         <div class="container">
             <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need for seamless clipboard synchronization across all your devices</p>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
+                    <span class="feature-icon">⚡</span>
                     <h3>Real-time Sync</h3>
                     <p>Your clipboard syncs instantly across all connected devices. Copy on your laptop, paste on your phone.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
+                    <span class="feature-icon">🔒</span>
                     <h3>Secure & Private</h3>
                     <p>Room-based sharing with password protection. Your data is encrypted and only accessible to authorized users.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">📱</div>
+                    <span class="feature-icon">📱</span>
                     <h3>Multi-format Support</h3>
                     <p>Sync text, images, files, and folders. Everything you copy is automatically synchronized.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">👻</div>
+                    <span class="feature-icon">👻</span>
                     <h3>Stealth Mode</h3>
                     <p>Secret clipboard monitoring with global hotkeys. Access your clipboard history anywhere with Ctrl+Shift+V.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
+                    <span class="feature-icon">🌐</span>
                     <h3>Web Dashboard</h3>
                     <p>Access your clipboard data from any browser. Upload content, view history, and manage rooms online.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">⚙️</div>
+                    <span class="feature-icon">⚙️</span>
                     <h3>Easy Setup</h3>
                     <p>No complex configuration needed. Download, run, create a room, and start syncing immediately.</p>
                 </div>
@@ -452,6 +533,7 @@
     <section class="how-it-works" id="how-it-works">
         <div class="container">
             <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Get started in minutes with our simple 4-step process</p>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
@@ -485,7 +567,7 @@
                 <h2>Ready to Sync Your Clipboard?</h2>
                 <p>Join thousands of users who have revolutionized their productivity with CloudClipboard.</p>
                 <div class="download-buttons">
-                    <a href="https://github.com/harrypeter/CloudClipboard/releases/latest/download/CloudClipboard.exe" class="btn-primary">📥 Download for Windows</a>
+                    <a href="https://github.com/harrypeter07/CloudClipboard/releases/latest/download/CloudClipboard.exe" class="btn-primary">📥 Download for Windows</a>
                     <a href="https://cloudclipboard.onrender.com/" class="btn-secondary">🌐 Try Web Version</a>
                 </div>
             </div>
@@ -498,7 +580,7 @@
     </section>
 
     <!-- Footer -->
-    <footer id="contact">
+    <footer class="footer" id="contact">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
@@ -507,15 +589,15 @@
                 </div>
                 <div class="footer-section">
                     <h3>Quick Links</h3>
-                    <p><a href="https://github.com/harrypeter/CloudClipboard">GitHub Repository</a></p>
+                    <p><a href="https://github.com/harrypeter07/CloudClipboard">GitHub Repository</a></p>
                     <p><a href="https://cloudclipboard.onrender.com/">Web Dashboard</a></p>
-                    <p><a href="https://github.com/harrypeter/CloudClipboard/issues">Report Issues</a></p>
+                    <p><a href="https://github.com/harrypeter07/CloudClipboard/issues">Report Issues</a></p>
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
                     <p><strong>Developer:</strong> HarryPeter</p>
-                    <p><strong>GitHub:</strong> <a href="https://github.com/harrypeter">@harrypeter</a></p>
-                    <p><strong>Email:</strong> harrypeter@github.com</p>
+                    <p><strong>GitHub:</strong> <a href="https://github.com/harrypeter07">@harrypeter07</a></p>
+                    <p><strong>Email:</strong> harrypeter07@github.com</p>
                 </div>
                 <div class="footer-section">
                     <h3>Legal</h3>
@@ -570,7 +652,6 @@
         // Download button click tracking
         document.querySelectorAll('.download-btn, .btn-primary').forEach(btn => {
             btn.addEventListener('click', function() {
-                // You can add analytics tracking here
                 console.log('Download button clicked');
             });
         });

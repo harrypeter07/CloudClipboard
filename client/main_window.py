@@ -750,7 +750,7 @@ Ctrl+Shift+7  →  Secret paste last item
     def open_github(self):
         """Open GitHub repository in browser"""
         import webbrowser
-        webbrowser.open("https://github.com/harrypeter/CloudClipboard")
+        webbrowser.open("https://github.com/harrypeter07/CloudClipboard")
     
     def create_room(self):
         """Create a new room"""

@@ -378,7 +378,7 @@ def create_web_routes(app: FastAPI):
                     <h1>☁️ CloudClipboard</h1>
                     <p>Cross-Device Clipboard Synchronization Platform</p>
                     <div class="github-section">
-                        <a href="https://github.com/harrypeter/CloudClipboard" target="_blank" class="github-btn">🐙 GitHub</a>
+                        <a href="https://github.com/harrypeter07/CloudClipboard" target="_blank" class="github-btn">🐙 GitHub</a>
                         <span class="credits">Made by HarryPeter</span>
                     </div>
                 </div>

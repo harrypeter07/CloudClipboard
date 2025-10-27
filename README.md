@@ -60,7 +60,7 @@ A powerful desktop application that synchronizes your clipboard across multiple 
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/harrypeter/CloudClipboard.git
+git clone https://github.com/harrypeter07/CloudClipboard.git
 cd CloudClipboard
 
 # Install server dependencies
@@ -259,9 +259,9 @@ Found a bug? Please report it!
 ## 📞 Contact
 
 **Developer**: HarryPeter  
-**GitHub**: [@harrypeter](https://github.com/harrypeter)  
-**Email**: [harrypeter@github.com](mailto:harrypeter@github.com)  
-**Project**: [CloudClipboard Repository](https://github.com/harrypeter/CloudClipboard)
+**GitHub**: [@harrypeter07](https://github.com/harrypeter07)  
+**Email**: [harrypeter07@github.com](mailto:harrypeter07@github.com)  
+**Project**: [CloudClipboard Repository](https://github.com/harrypeter07/CloudClipboard)
 
 ---
 
