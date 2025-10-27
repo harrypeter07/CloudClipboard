@@ -39,7 +39,7 @@ def create_web_routes(app: FastAPI):
                 
                 body {
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(136deg, #667eea 0%, #764ba2 100%);
                     min-height: 100vh;
                     padding: 20px;
                 }
