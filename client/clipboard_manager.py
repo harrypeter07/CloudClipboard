@@ -303,60 +303,74 @@ class ClipboardManagerApp:
     
     def show_history(self, icon=None, item=None):
         """Show clipboard history overlay"""
-        threading.Thread(target=self._show_history_window, daemon=True).start()
+        if not self.username or not self.room_id:
+            self.show_notification("❌ Please authenticate first")
+            return
+        
+        threading.Thread(target=self._show_history_overlay, daemon=True).start()
     
-    def _show_history_window(self):
-        """Display history in overlay window"""
-        window = tk.Tk()
-        window.title(f"📋 Clipboard History - Room: {self.room_id}")
-        window.geometry("700x500")
-        window.attributes("-topmost", True)
-        
-        # Center window
-        screen_width = window.winfo_screenwidth()
-        screen_height = window.winfo_screenheight()
-        x = (screen_width - 700) // 2
-        y = (screen_height - 500) // 2
-        window.geometry(f"700x500+{x}+{y}")
-        
-        # Title with room info
-        title_frame = tk.Frame(window, bg="#3498db")
-        title_frame.pack(fill=tk.X)
-        
-        title_label = tk.Label(
-            title_frame,
-            text=f"📋 Room: {self.room_id} | User: {self.username}",
-            font=("Arial", 14, "bold"),
-            bg="#3498db",
-            fg="white",
-            pady=12
-        )
-        title_label.pack()
-        
-        # Hotkey info
-        info_label = tk.Label(
-            window,
-            text=f"Hotkeys: {HOTKEY_HISTORY} = History | {HOTKEY_GHOST_MODE} = Ghost Mode",
-            font=("Arial", 9),
-            fg="#7f8c8d",
-            pady=5
-        )
-        info_label.pack()
-        
-        # Fetch history
+    def _show_history_overlay(self):
+        """Create beautiful overlay window showing clipboard history"""
         try:
-            response = requests.get(
-                f"{API_URL}/api/clipboard/history/{self.room_id}",
-                timeout=10
-            )
-            items = response.json()["items"] if response.status_code == 200 else []
-        except:
-            items = []
+            # Fetch recent items from server
+            response = requests.get(f"{API_URL}/api/clipboard/history/{self.room_id}", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                items = data.get("items", [])
+                
+                if not items:
+                    self.show_notification("📭 No clipboard history found")
+                    return
+                
+                # Create overlay window
+                self.create_history_overlay(items)
+            else:
+                self.show_notification("❌ Failed to fetch history")
+        except Exception as e:
+            self.show_notification(f"❌ Error: {str(e)[:50]}")
+    
+    def create_history_overlay(self, items):
+        """Create a beautiful overlay window showing clipboard history"""
+        import tkinter as tk
+        from tkinter import ttk
         
-        # Scrollable list
-        canvas = tk.Canvas(window)
-        scrollbar = ttk.Scrollbar(window, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
+        # Create overlay window
+        overlay = tk.Toplevel()
+        overlay.title("📋 Recent Clipboard Items")
+        overlay.geometry("600x500")
+        overlay.configure(bg='#2c3e50')
+        
+        # Center the window
+        overlay.update_idletasks()
+        x = (overlay.winfo_screenwidth() // 2) - (600 // 2)
+        y = (overlay.winfo_screenheight() // 2) - (500 // 2)
+        overlay.geometry(f"600x500+{x}+{y}")
+        
+        # Make it stay on top
+        overlay.attributes('-topmost', True)
+        overlay.focus_force()
+        
+        # Header
+        header_frame = tk.Frame(overlay, bg='#3498db', height=60)
+        header_frame.pack(fill=tk.X, padx=10, pady=10)
+        header_frame.pack_propagate(False)
+        
+        tk.Label(
+            header_frame,
+            text="📋 Recent Clipboard Items",
+            font=('Segoe UI', 16, 'bold'),
+            bg='#3498db',
+            fg='white'
+        ).pack(expand=True)
+        
+        # Items list
+        items_frame = tk.Frame(overlay, bg='#ecf0f1')
+        items_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        
+        # Create scrollable frame
+        canvas = tk.Canvas(items_frame, bg='#ecf0f1')
+        scrollbar = ttk.Scrollbar(items_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='#ecf0f1')
         
         scrollable_frame.bind(
             "<Configure>",
@@ -366,141 +380,192 @@ class ClipboardManagerApp:
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        if not items:
-            no_data = tk.Label(
-                scrollable_frame,
-                text="📭 No clipboard history yet\n\nStart copying to see items here!",
-                font=("Arial", 12),
-                fg="#95a5a6",
-                pady=40
-            )
-            no_data.pack()
-        else:
-            for item_data in items[:50]:
-                frame = tk.Frame(
-                    scrollable_frame,
-                    relief=tk.RAISED,
-                    borderwidth=1,
-                    padx=12,
-                    pady=10,
-                    bg="#ecf0f1"
-                )
-                frame.pack(fill=tk.X, padx=12, pady=6)
-                
-                # Icon and content
-                icon_text = {
-                    "text": "📝",
-                    "image": "🖼️",
-                    "file": "📄",
-                    "folder": "📁"
-                }.get(item_data["type"], "📋")
-                
-                # Header with username and time
-                header_frame = tk.Frame(frame, bg="#ecf0f1")
-                header_frame.pack(fill=tk.X, pady=(0, 5))
-                
-                user_label = tk.Label(
-                    header_frame,
-                    text=f"👤 {item_data['username']}",
-                    font=("Arial", 9, "bold"),
-                    bg="#ecf0f1",
-                    fg="#2c3e50"
-                )
-                user_label.pack(side=tk.LEFT)
-                
-                time_label = tk.Label(
-                    header_frame,
-                    text=f"🕐 {item_data['timestamp'][:19]}",
-                    font=("Arial", 8),
-                    bg="#ecf0f1",
-                    fg="#7f8c8d"
-                )
-                time_label.pack(side=tk.RIGHT)
-                
-                # Content
-                if item_data["type"] == "text":
-                    content_text = item_data["content"][:120]
-                    if len(item_data["content"]) > 120:
-                        content_text += "..."
-                else:
-                    content_text = f"{item_data['type'].upper()}: {item_data.get('filename', 'Unknown')}"
-                
-                content_label = tk.Label(
-                    frame,
-                    text=f"{icon_text}  {content_text}",
-                    anchor="w",
-                    justify="left",
-                    wraplength=600,
-                    font=("Arial", 10),
-                    bg="#ecf0f1"
-                )
-                content_label.pack(fill=tk.X)
-                
-                # Click to paste
-                def paste_item(i=item_data):
-                    if i["type"] == "text":
-                        pyperclip.copy(i["content"])
-                        self.show_notification("✅ Text pasted to clipboard")
-                    elif i["type"] in ["image", "file", "folder"]:
-                        file_url = f"{API_URL}{i['file_url']}"
-                        pyperclip.copy(file_url)
-                        self.show_notification(f"✅ {i['type']} URL copied")
-                    window.destroy()
-                
-                frame.bind("<Button-1>", lambda e, i=item_data: paste_item(i))
-                content_label.bind("<Button-1>", lambda e, i=item_data: paste_item(i))
-                
-                # Hover effect
-                def on_enter(e, f=frame):
-                    f.config(bg="#bdc3c7")
-                    for child in f.winfo_children():
-                        if isinstance(child, (tk.Label, tk.Frame)):
-                            child.config(bg="#bdc3c7")
-                
-                def on_leave(e, f=frame):
-                    f.config(bg="#ecf0f1")
-                    for child in f.winfo_children():
-                        if isinstance(child, (tk.Label, tk.Frame)):
-                            child.config(bg="#ecf0f1")
-                
-                frame.bind("<Enter>", on_enter)
-                frame.bind("<Leave>", on_leave)
-                content_label.bind("<Enter>", on_enter)
-                content_label.bind("<Leave>", on_leave)
+        # Display items
+        for i, item in enumerate(items[:20]):  # Show last 20 items
+            self.create_history_item_card(scrollable_frame, item, i)
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
-        # Bottom buttons
-        bottom_frame = tk.Frame(window, bg="#34495e", pady=8)
-        bottom_frame.pack(fill=tk.X, side=tk.BOTTOM)
-        
+        # Close button
         close_btn = tk.Button(
-            bottom_frame,
-            text="Close (Esc)",
-            command=window.destroy,
-            bg="#e74c3c",
-            fg="white",
-            font=("Arial", 10),
+            overlay,
+            text="❌ Close",
+            font=('Segoe UI', 12),
+            bg='#e74c3c',
+            fg='white',
             relief=tk.FLAT,
-            padx=20
+            padx=20,
+            pady=8,
+            command=overlay.destroy
         )
-        close_btn.pack(side=tk.RIGHT, padx=10)
+        close_btn.pack(pady=10)
         
-        refresh_btn = tk.Button(
-            bottom_frame,
-            text="↻ Refresh",
-            command=lambda: [window.destroy(), self.show_history()],
-            bg="#3498db",
-            fg="white",
-            font=("Arial", 10),
+        # Auto-close after 30 seconds
+        overlay.after(30000, overlay.destroy)
+    
+    def create_history_item_card(self, parent, item, index):
+        """Create a card for a clipboard history item"""
+        # Item card frame
+        card_frame = tk.Frame(parent, bg='white', relief=tk.RAISED, bd=2)
+        card_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        # Type icon and info
+        type_icons = {
+            'text': '📝',
+            'image': '🖼️',
+            'file': '📄',
+            'folder': '📁'
+        }
+        
+        icon = type_icons.get(item['type'], '📋')
+        
+        # Header with type and time
+        header_frame = tk.Frame(card_frame, bg='white')
+        header_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
+        
+        tk.Label(
+            header_frame,
+            text=f"{icon} {item['type'].upper()}",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side=tk.LEFT)
+        
+        # Time
+        time_str = item.get('timestamp', '')
+        if time_str:
+            try:
+                from datetime import datetime
+                if isinstance(time_str, str):
+                    dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                else:
+                    dt = time_str
+                time_display = dt.strftime('%H:%M:%S')
+            except:
+                time_display = 'Unknown'
+        else:
+            time_display = 'Unknown'
+        
+        tk.Label(
+            header_frame,
+            text=time_display,
+            font=('Segoe UI', 9),
+            bg='white',
+            fg='#7f8c8d'
+        ).pack(side=tk.RIGHT)
+        
+        # Username
+        tk.Label(
+            card_frame,
+            text=f"👤 {item.get('username', 'Unknown')}",
+            font=('Segoe UI', 9),
+            bg='white',
+            fg='#34495e'
+        ).pack(anchor=tk.W, padx=10)
+        
+        # Content preview
+        content_frame = tk.Frame(card_frame, bg='#f8f9fa', relief=tk.SUNKEN, bd=1)
+        content_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        if item['type'] == 'text':
+            content = item.get('content', '')
+            preview = content[:100] + '...' if len(content) > 100 else content
+            tk.Label(
+                content_frame,
+                text=preview,
+                font=('Courier New', 9),
+                bg='#f8f9fa',
+                fg='#2c3e50',
+                wraplength=550,
+                justify=tk.LEFT
+            ).pack(padx=5, pady=5, anchor=tk.W)
+        else:
+            filename = item.get('filename', 'Unknown file')
+            tk.Label(
+                content_frame,
+                text=f"📁 {filename}",
+                font=('Segoe UI', 9),
+                bg='#f8f9fa',
+                fg='#2c3e50'
+            ).pack(padx=5, pady=5, anchor=tk.W)
+        
+        # Action buttons
+        btn_frame = tk.Frame(card_frame, bg='white')
+        btn_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+        # Copy button
+        copy_btn = tk.Button(
+            btn_frame,
+            text="📋 Copy",
+            font=('Segoe UI', 8),
+            bg='#3498db',
+            fg='white',
             relief=tk.FLAT,
-            padx=20
+            padx=10,
+            pady=3,
+            command=lambda: self.copy_history_item(item)
         )
-        refresh_btn.pack(side=tk.RIGHT, padx=5)
+        copy_btn.pack(side=tk.LEFT, padx=(0, 5))
         
-        window.bind("<Escape>", lambda e: window.destroy())
-        window.mainloop()
+        # Paste button
+        paste_btn = tk.Button(
+            btn_frame,
+            text="📥 Paste",
+            font=('Segoe UI', 8),
+            bg='#27ae60',
+            fg='white',
+            relief=tk.FLAT,
+            padx=10,
+            pady=3,
+            command=lambda: self.paste_history_item(item)
+        )
+        paste_btn.pack(side=tk.LEFT)
+    
+    def copy_history_item(self, item):
+        """Copy a specific history item to clipboard"""
+        try:
+            if item['type'] == 'text':
+                pyperclip.copy(item['content'])
+                self.show_notification("✅ Text copied to clipboard")
+            else:
+                # For files/images, copy the download URL
+                file_url = f"{API_URL}/api/clipboard/download/{item['id']}"
+                pyperclip.copy(file_url)
+                self.show_notification("✅ File URL copied to clipboard")
+        except Exception as e:
+            self.show_notification(f"❌ Copy failed: {str(e)[:30]}")
+    
+    def paste_history_item(self, item):
+        """Paste a specific history item"""
+        try:
+            if item['type'] == 'text':
+                pyperclip.copy(item['content'])
+                self.show_notification("✅ Text pasted to clipboard")
+            elif item['type'] == 'image':
+                # Download and paste image
+                file_url = f"{API_URL}/api/clipboard/download/{item['id']}"
+                img_response = requests.get(file_url, timeout=15)
+                if img_response.status_code == 200:
+                    temp_path = Path.home() / ".cloudclipboard" / "temp_image.png"
+                    temp_path.parent.mkdir(exist_ok=True)
+                    with open(temp_path, 'wb') as f:
+                        f.write(img_response.content)
+                    
+                    pyperclip.copy(str(temp_path))
+                    self.show_notification("✅ Image pasted to clipboard")
+                    
+                    # Clean up temp file after 5 seconds
+                    threading.Timer(5.0, lambda: temp_path.unlink(missing_ok=True)).start()
+                else:
+                    self.show_notification("❌ Failed to download image")
+            else:
+                # For other files, copy URL
+                file_url = f"{API_URL}/api/clipboard/download/{item['id']}"
+                pyperclip.copy(file_url)
+                self.show_notification("✅ File URL pasted to clipboard")
+        except Exception as e:
+            self.show_notification(f"❌ Paste failed: {str(e)[:30]}")
     
     def update_icon(self):
         """Update system tray icon"""
