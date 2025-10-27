@@ -304,7 +304,7 @@ async def api_info():
 async def health_check():
     return {"status": "healthy"}
 
-@app.get("/dashboard", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 async def web_dashboard():
     """Web dashboard for viewing clipboard data"""
     html_content = """
