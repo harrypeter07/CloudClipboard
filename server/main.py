@@ -22,6 +22,7 @@ from database import (
     users_collection,
     init_db
 )
+from web_dashboard import create_web_routes
 
 # Configure logging
 logging.basicConfig(
@@ -54,6 +55,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add web routes
+create_web_routes(app)
 
 # Create uploads directory
 UPLOAD_DIR = Path("uploads")
@@ -182,42 +186,55 @@ async def save_image(
     file: UploadFile = File(...),
     request: Request = None
 ):
-    """Save image clipboard"""
+    """Save image clipboard as base64"""
     client_ip = request.client.host if request and hasattr(request, 'client') else "unknown"
     
     # Validate file size
     if file.size and file.size > MAX_FILE_SIZE:
-        logger.warning(f"❌ Image upload failed - file too large: {file.size} bytes from {client_ip}")
+        logger.warning(f"Image upload failed - file too large: {file.size} bytes from {client_ip}")
         raise HTTPException(status_code=413, detail="File too large (max 50MB)")
     
     room = await rooms_collection.find_one({"room_id": room_id})
     if not room:
-        logger.warning(f"❌ Image upload failed - room not found: {room_id} from {client_ip}")
+        logger.warning(f"Image upload failed - room not found: {room_id} from {client_ip}")
         raise HTTPException(status_code=404, detail="Room not found")
     
-    item_id = str(uuid.uuid4())
-    file_ext = Path(file.filename).suffix or ".png"
-    filename = f"{item_id}{file_ext}"
-    file_path = UPLOAD_DIR / filename
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    clipboard_data = {
-        "id": item_id,
-        "room_id": room_id,
-        "username": username,
-        "type": "image",
-        "content": None,
-        "file_url": f"/uploads/{filename}",
-        "filename": filename,
-        "timestamp": datetime.utcnow(),
-        "metadata": {"original_filename": file.filename}
-    }
-    
-    await clipboard_collection.insert_one(clipboard_data)
-    logger.info(f"🖼️ Image saved: {username} in {room_id} - {filename} from {client_ip}")
-    return {"status": "success", "id": item_id, "file_url": clipboard_data["file_url"]}
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Convert to base64
+        import base64
+        base64_content = base64.b64encode(content).decode('utf-8')
+        
+        # Generate unique ID
+        item_id = str(uuid.uuid4())
+        
+        # Store in database with base64 content
+        clipboard_data = {
+            "id": item_id,
+            "room_id": room_id,
+            "username": username,
+            "type": "image",
+            "content": base64_content,  # Store as base64
+            "filename": file.filename,
+            "file_url": f"/api/clipboard/download/{item_id}",
+            "timestamp": datetime.utcnow(),
+            "metadata": {
+                "original_size": len(content),
+                "base64_size": len(base64_content),
+                "mime_type": file.content_type,
+                "original_filename": file.filename
+            }
+        }
+        
+        await clipboard_collection.insert_one(clipboard_data)
+        logger.info(f"Image saved as base64: {username} in {room_id} - {file.filename} from {client_ip}")
+        return {"status": "success", "id": item_id}
+        
+    except Exception as e:
+        logger.error(f"Error saving image: {e}")
+        raise HTTPException(status_code=500, detail="Error saving image")
 
 @app.post("/api/clipboard/file")
 async def save_file(
@@ -226,41 +243,66 @@ async def save_file(
     file: UploadFile = File(...),
     request: Request = None
 ):
-    """Save file/folder clipboard"""
+    """Save file/folder clipboard with proper zipping"""
     client_ip = request.client.host if request and hasattr(request, 'client') else "unknown"
     
     # Validate file size
     if file.size and file.size > MAX_FILE_SIZE:
-        logger.warning(f"❌ File upload failed - file too large: {file.size} bytes from {client_ip}")
+        logger.warning(f"File upload failed - file too large: {file.size} bytes from {client_ip}")
         raise HTTPException(status_code=413, detail="File too large (max 50MB)")
     
     room = await rooms_collection.find_one({"room_id": room_id})
     if not room:
-        logger.warning(f"❌ File upload failed - room not found: {room_id} from {client_ip}")
+        logger.warning(f"File upload failed - room not found: {room_id} from {client_ip}")
         raise HTTPException(status_code=404, detail="Room not found")
     
-    item_id = str(uuid.uuid4())
-    filename = f"{item_id}_{file.filename}"
-    file_path = UPLOAD_DIR / filename
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    clipboard_data = {
-        "id": item_id,
-        "room_id": room_id,
-        "username": username,
-        "type": "file",
-        "content": None,
-        "file_url": f"/uploads/{filename}",
-        "filename": filename,
-        "timestamp": datetime.utcnow(),
-        "metadata": {"original_filename": file.filename}
-    }
-    
-    await clipboard_collection.insert_one(clipboard_data)
-    logger.info(f"📁 File saved: {username} in {room_id} - {filename} from {client_ip}")
-    return {"status": "success", "id": item_id, "file_url": clipboard_data["file_url"]}
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Create zip file
+        import zipfile
+        import io
+        
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            zip_file.writestr(file.filename, content)
+        
+        zip_content = zip_buffer.getvalue()
+        
+        # Convert to base64 for storage
+        import base64
+        base64_content = base64.b64encode(zip_content).decode('utf-8')
+        
+        # Generate unique ID
+        item_id = str(uuid.uuid4())
+        
+        # Store in database with base64 zip content
+        clipboard_data = {
+            "id": item_id,
+            "room_id": room_id,
+            "username": username,
+            "type": "file",
+            "content": base64_content,  # Store as base64 zip
+            "filename": f"{file.filename}.zip",
+            "file_url": f"/api/clipboard/download/{item_id}",
+            "timestamp": datetime.utcnow(),
+            "metadata": {
+                "original_filename": file.filename,
+                "original_size": len(content),
+                "zip_size": len(zip_content),
+                "base64_size": len(base64_content),
+                "mime_type": file.content_type
+            }
+        }
+        
+        await clipboard_collection.insert_one(clipboard_data)
+        logger.info(f"File saved as zip: {username} in {room_id} - {file.filename} from {client_ip}")
+        return {"status": "success", "id": item_id}
+        
+    except Exception as e:
+        logger.error(f"Error saving file: {e}")
+        raise HTTPException(status_code=500, detail="Error saving file")
 
 @app.get("/api/clipboard/history/{room_id}")
 async def get_history(room_id: str, limit: int = 100):
@@ -916,21 +958,45 @@ async def download_clipboard_item(item_id: str):
         
         if item["type"] == "text":
             return JSONResponse(content={"content": item["content"]})
-        elif item["type"] in ["file", "image"]:
-            filename = item.get("filename")
-            if filename:
-                file_path = UPLOAD_DIR / filename
-                if file_path.exists():
-                    return FileResponse(
-                        path=file_path,
-                        filename=item.get("filename", "clipboard_item"),
-                        media_type="application/octet-stream"
-                    )
-                else:
-                    logger.warning(f"File not found on disk: {file_path}")
-                    raise HTTPException(status_code=404, detail="File not found on disk")
-            else:
-                raise HTTPException(status_code=404, detail="No filename in item")
+        elif item["type"] == "image":
+            # Handle base64 image content
+            import base64
+            import io
+            from fastapi.responses import Response
+            
+            base64_content = item.get("content", "")
+            if not base64_content:
+                raise HTTPException(status_code=404, detail="No image content found")
+            
+            # Decode base64 to bytes
+            image_bytes = base64.b64decode(base64_content)
+            
+            # Determine content type
+            mime_type = item.get("metadata", {}).get("mime_type", "image/png")
+            
+            return Response(
+                content=image_bytes,
+                media_type=mime_type,
+                headers={"Content-Disposition": f"inline; filename={item.get('filename', 'image.png')}"}
+            )
+        elif item["type"] == "file":
+            # Handle base64 zip content
+            import base64
+            import io
+            from fastapi.responses import Response
+            
+            base64_content = item.get("content", "")
+            if not base64_content:
+                raise HTTPException(status_code=404, detail="No file content found")
+            
+            # Decode base64 to bytes
+            zip_bytes = base64.b64decode(base64_content)
+            
+            return Response(
+                content=zip_bytes,
+                media_type="application/zip",
+                headers={"Content-Disposition": f"attachment; filename={item.get('filename', 'file.zip')}"}
+            )
         else:
             raise HTTPException(status_code=400, detail="Unsupported item type")
     except Exception as e:

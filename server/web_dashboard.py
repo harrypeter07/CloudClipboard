@@ -514,7 +514,9 @@ def create_web_routes(app: FastAPI):
                         if (item.type === 'text') {
                             content = item.content.substring(0, 200) + (item.content.length > 200 ? '...' : '');
                         } else if (item.type === 'image') {
-                            content = `<img src="/api/clipboard/download/${item.id}" class="item-image" alt="Uploaded image">`;
+                            // Display base64 image directly
+                            const mimeType = item.metadata?.mime_type || 'image/png';
+                            content = `<img src="data:${mimeType};base64,${item.content}" class="item-image" alt="Uploaded image">`;
                         } else {
                             content = `${item.type.toUpperCase()}: ${item.filename || 'Unknown'}`;
                         }
@@ -536,27 +538,36 @@ def create_web_routes(app: FastAPI):
                     contentDiv.innerHTML = html;
                 }
                 
-                async function copyItem(itemId, itemType) {
-                    try {
-                        const response = await fetch(`/api/clipboard/download/${itemId}`);
-                        if (response.ok) {
-                            if (itemType === 'text') {
-                                const data = await response.json();
-                                await navigator.clipboard.writeText(data.content);
-                                alert('✅ Text copied to clipboard!');
-                            } else {
-                                // For images/files, copy the URL
-                                const blob = await response.blob();
-                                await navigator.clipboard.writeText(window.location.origin + `/api/clipboard/download/${itemId}`);
-                                alert('✅ File URL copied to clipboard!');
-                            }
+            async function copyItem(itemId, itemType) {
+                try {
+                    const response = await fetch(`/api/clipboard/download/${itemId}`);
+                    if (response.ok) {
+                        if (itemType === 'text') {
+                            const data = await response.json();
+                            await navigator.clipboard.writeText(data.content);
+                            alert('✅ Text copied to clipboard!');
+                        } else if (itemType === 'image') {
+                            // For images, copy the base64 data URL
+                            const blob = await response.blob();
+                            const reader = new FileReader();
+                            reader.onload = function() {
+                                navigator.clipboard.writeText(reader.result);
+                                alert('✅ Image data URL copied to clipboard!');
+                            };
+                            reader.readAsDataURL(blob);
                         } else {
-                            alert('❌ Failed to copy item');
+                            // For files, copy the URL
+                            const blob = await response.blob();
+                            await navigator.clipboard.writeText(window.location.origin + `/api/clipboard/download/${itemId}`);
+                            alert('✅ File URL copied to clipboard!');
                         }
-                    } catch (error) {
-                        alert('❌ Error copying item: ' + error.message);
+                    } else {
+                        alert('❌ Failed to copy item');
                     }
+                } catch (error) {
+                    alert('❌ Error copying item: ' + error.message);
                 }
+            }
                 
                 // Upload form handling
                 document.getElementById('uploadForm').addEventListener('submit', async function(e) {

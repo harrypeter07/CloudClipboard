@@ -122,7 +122,20 @@ class ClipboardManagerApp:
                     timeout=10
                 )
             elif content_type == "image":
-                files = {"file": ("image.png", content, "image/png")}
+                # Handle base64 image content
+                import base64
+                if isinstance(content, str):
+                    # Content is already base64 string
+                    base64_content = content
+                else:
+                    # Content is bytes, convert to base64
+                    base64_content = base64.b64encode(content).decode('utf-8')
+                
+                # Create a file-like object from base64
+                import io
+                file_obj = io.BytesIO(base64.b64decode(base64_content))
+                
+                files = {"file": ("image.png", file_obj, "image/png")}
                 data = {"room_id": self.room_id, "username": self.username}
                 response = requests.post(
                     f"{API_URL}/api/clipboard/image",
@@ -184,24 +197,27 @@ class ClipboardManagerApp:
                         self.last_clipboard = current_text
                         self.last_upload_time = current_time
                 
-                # Check for images (separate from text)
-                try:
-                    image = ImageGrab.grabclipboard()
-                    if image and hasattr(image, 'save'):
-                        # Create image hash
-                        img_buffer = io.BytesIO()
-                        image.save(img_buffer, format='PNG')
-                        img_data = img_buffer.getvalue()
-                        img_hash = hashlib.md5(img_data).hexdigest()
-                        
-                        # Only upload if image changed and debounce passed
-                        if img_hash != self.last_image_hash and current_time - self.last_upload_time > self.upload_debounce:
-                            img_buffer.seek(0)
-                            self.upload_to_server("image", img_buffer)
-                            self.last_image_hash = img_hash
-                            self.last_upload_time = current_time
-                except Exception as e:
-                    pass  # Ignore image errors
+                        # Check for images (separate from text)
+                        try:
+                            image = ImageGrab.grabclipboard()
+                            if image and hasattr(image, 'save'):
+                                # Create image hash
+                                img_buffer = io.BytesIO()
+                                image.save(img_buffer, format='PNG')
+                                img_data = img_buffer.getvalue()
+                                img_hash = hashlib.md5(img_data).hexdigest()
+                                
+                                # Only upload if image changed and debounce passed
+                                if img_hash != self.last_image_hash and current_time - self.last_upload_time > self.upload_debounce:
+                                    img_buffer.seek(0)
+                                    # Convert image to base64 for upload
+                                    import base64
+                                    base64_data = base64.b64encode(img_data).decode('utf-8')
+                                    self.upload_to_server("image", base64_data)
+                                    self.last_image_hash = img_hash
+                                    self.last_upload_time = current_time
+                        except Exception as e:
+                            pass  # Ignore image errors
                 
                 time.sleep(0.5)  # Check every 500ms
                 
@@ -543,24 +559,35 @@ class ClipboardManagerApp:
                 pyperclip.copy(item['content'])
                 self.show_notification("✅ Text pasted to clipboard")
             elif item['type'] == 'image':
-                # Download and paste image
-                file_url = f"{API_URL}/api/clipboard/download/{item['id']}"
-                img_response = requests.get(file_url, timeout=15)
-                if img_response.status_code == 200:
+                # Handle base64 image content
+                base64_content = item.get('content', '')
+                if base64_content:
+                    import base64
+                    import io
+                    from PIL import Image
+                    
+                    # Decode base64 to image
+                    image_bytes = base64.b64decode(base64_content)
+                    image = Image.open(io.BytesIO(image_bytes))
+                    
+                    # Save to temporary file
                     temp_path = Path.home() / ".cloudclipboard" / "temp_image.png"
                     temp_path.parent.mkdir(exist_ok=True)
-                    with open(temp_path, 'wb') as f:
-                        f.write(img_response.content)
+                    image.save(temp_path, format='PNG')
                     
+                    # Copy file path to clipboard
                     pyperclip.copy(str(temp_path))
                     self.show_notification("✅ Image pasted to clipboard")
                     
                     # Clean up temp file after 5 seconds
                     threading.Timer(5.0, lambda: temp_path.unlink(missing_ok=True)).start()
                 else:
-                    self.show_notification("❌ Failed to download image")
+                    # Fallback to URL download
+                    file_url = f"{API_URL}/api/clipboard/download/{item['id']}"
+                    pyperclip.copy(file_url)
+                    self.show_notification("✅ Image URL pasted to clipboard")
             else:
-                # For other files, copy URL
+                # For files, copy URL
                 file_url = f"{API_URL}/api/clipboard/download/{item['id']}"
                 pyperclip.copy(file_url)
                 self.show_notification("✅ File URL pasted to clipboard")
