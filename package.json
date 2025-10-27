@@ -1,0 +1,28 @@
+{
+  "name": "cloudclipboard-landing",
+  "version": "1.0.0",
+  "description": "Landing page for CloudClipboard - Cross-Device Clipboard Synchronization Platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "clipboard",
+    "sync",
+    "productivity",
+    "cross-device",
+    "cloud"
+  ],
+  "author": "HarryPeter",
+  "license": "PROPRIETARY",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/harrypeter/CloudClipboard"
+  },
+  "homepage": "https://cloudclipboard.com",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
