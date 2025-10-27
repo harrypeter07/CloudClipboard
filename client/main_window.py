@@ -240,6 +240,10 @@ class MainWindow:
         )
         credits_label.pack(side=tk.LEFT, padx=10)
         
+        # Buttons with modern styling
+        button_frame = tk.Frame(form_frame, bg=self.colors['light'])
+        button_frame.pack(pady=30)
+        
         self.create_room_btn = tk.Button(
             button_frame, 
             text="✨ Create Room", 
