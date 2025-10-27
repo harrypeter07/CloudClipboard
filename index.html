@@ -176,36 +176,36 @@
         }
 
         .download-btn {
-            background: var(--primary);
-            color: white;
-            padding: 16px 32px;
+            background: white;
+            color: var(--primary);
+            padding: 20px 48px;
             border: none;
             border-radius: var(--radius-lg);
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-xl);
         }
 
         .download-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
         }
 
         .download-info {
-            margin-top: 16px;
-            font-size: 14px;
-            color: var(--text-muted);
+            margin-top: 20px;
+            font-size: 15px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
         }
 
         /* Features Section */
         .features {
             padding: 80px 0;
-            background: var(--background);
+            background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
         }
 
         .section-title {
@@ -229,20 +229,38 @@
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 32px;
+            gap: 24px;
         }
 
         .feature-card {
-            background: var(--background);
+            background: var(--surface);
             padding: 32px;
             border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            transition: all 0.2s ease;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
         }
 
         .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
             border-color: var(--primary);
         }
 
@@ -267,7 +285,7 @@
         /* How It Works */
         .how-it-works {
             padding: 80px 0;
-            background: var(--surface);
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
         }
 
         .steps {
@@ -505,11 +523,11 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1 class="fade-in-up">Sync Your Clipboard Across All Devices</h1>
-            <p class="fade-in-up">Copy on one device, paste on another. Seamless clipboard synchronization for maximum productivity.</p>
-            <a href="#download" class="download-btn fade-in-up">Download Now</a>
+            <h1 class="fade-in-up">The Future of Clipboard Synchronization is Here</h1>
+            <p class="fade-in-up">Never lose your clipboard content again. Copy on your laptop at home, paste on your work computer instantly. Break free from device boundaries and experience true cross-platform clipboard magic. Your productivity will thank you.</p>
+            <a href="#download" class="download-btn fade-in-up">🚀 Download Free Now</a>
             <div class="download-info fade-in-up">
-                Free • Windows 10/11 • 15MB • No Installation Required
+                ✨ Free Forever • ⚡ Instant Setup • 🔒 Bank-Level Security • 💯 No Ads
             </div>
         </div>
     </section>
@@ -589,10 +607,10 @@
         <div class="container">
             <h2 class="section-title">Download CloudClipboard</h2>
             <div class="download-card">
-                <h2>Ready to Sync Your Clipboard?</h2>
-                <p>Join thousands of users who have revolutionized their productivity with CloudClipboard.</p>
+                <h2>Start Your Productivity Journey Today</h2>
+                <p>Join thousands of professionals, developers, and students who have revolutionized their workflow with CloudClipboard. Download now and experience the power of truly seamless clipboard synchronization across all your devices.</p>
                 <div class="download-buttons">
-                    <a href="https://github.com/harrypeter07/CloudClipboard/releases/latest/download/CloudClipboard.exe" class="btn-primary">📥 Download for Windows</a>
+                    <a href="https://github.com/harrypeter07/CloudClipboard/releases/latest/download/CloudClipboard.exe" class="btn-primary">📥 Download for Windows (15MB)</a>
                     <a href="https://cloudclipboard.onrender.com/" class="btn-secondary">🌐 Try Web Version</a>
                 </div>
             </div>

@@ -56,7 +56,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add web routes
+# Health check endpoint to keep service active on Render
+@app.get("/health")
+async def health_check():
+    """Health check endpoint to keep Render service active"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "CloudClipboard API"
+    }
+
+# Add web routes (this must come after health check to override root)
 create_web_routes(app)
 
 # Create uploads directory

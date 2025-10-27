@@ -7,7 +7,6 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 import logging
-from database import init_db, rooms_collection, users_collection, clipboard_collection
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
