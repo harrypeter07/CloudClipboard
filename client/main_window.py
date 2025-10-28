@@ -215,26 +215,11 @@ class MainWindow:
         credits_frame = tk.Frame(form_frame, bg=self.colors['light'])
         credits_frame.pack(pady=(20, 0))
         
-        # GitHub button
-        github_btn = tk.Button(
-            credits_frame,
-            text="🐙 GitHub",
-            command=self.open_github,
-            font=("Arial", 10),
-            bg="#24292e",
-            fg="white",
-            relief=tk.FLAT,
-            padx=15,
-            pady=5,
-            cursor="hand2"
-        )
-        github_btn.pack(side=tk.LEFT, padx=5)
-        
-        # Credits
+        # Credits (no GitHub button here as requested)
         credits_label = tk.Label(
             credits_frame,
-            text="Made by HarryPeter | Educational Use Only",
-            font=("Arial", 8),
+            text="Enter your Room ID and Username, then press OK",
+            font=("Arial", 9, "bold"),
             bg=self.colors['light'],
             fg=self.colors['secondary']
         )
@@ -271,6 +256,21 @@ class MainWindow:
             cursor="hand2"
         )
         self.join_room_btn.pack(side=tk.LEFT, padx=10)
+        
+        # OK button (acts as quick join)
+        self.ok_btn = tk.Button(
+            button_frame,
+            text="✅ OK",
+            command=self.join_room,
+            font=("Arial", 12, "bold"),
+            bg=self.colors['dark'],
+            fg=self.colors['white'],
+            relief=tk.FLAT,
+            padx=30,
+            pady=10,
+            cursor="hand2"
+        )
+        self.ok_btn.pack(side=tk.LEFT, padx=10)
         
         self.logout_btn = tk.Button(
             button_frame, 
