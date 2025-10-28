@@ -211,6 +211,24 @@ class MainWindow:
                                      show="*", relief=tk.FLAT, bd=5, bg=self.colors['white'])
         self.password_entry.pack(fill=tk.X, pady=(5, 0))
         
+        # Inline OK button right below inputs
+        ok_inline_frame = tk.Frame(fields_frame, bg=self.colors['light'])
+        ok_inline_frame.pack(fill=tk.X, pady=(15, 0))
+        
+        self.ok_inline_btn = tk.Button(
+            ok_inline_frame,
+            text="✅ OK",
+            command=self.join_room,
+            font=("Arial", 12, "bold"),
+            bg=self.colors['secondary'],
+            fg=self.colors['white'],
+            relief=tk.FLAT,
+            padx=25,
+            pady=8,
+            cursor="hand2"
+        )
+        self.ok_inline_btn.pack(side=tk.RIGHT)
+        
         # Credits and Disclaimer (minimal)
         credits_frame = tk.Frame(form_frame, bg=self.colors['light'])
         credits_frame.pack(pady=(20, 0))
